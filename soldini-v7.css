@@ -1,0 +1,15 @@
+/* Soldini V7 - selettore categorie mobile */
+.v7-category-wrap{position:relative;margin-bottom:12px}
+.v7-input-row{display:flex;align-items:center;border:1px solid #ead8e1;border-radius:16px;background:#fffaf9;overflow:hidden;min-height:54px}
+.v7-input-row:focus-within{border-color:#ec88a8;box-shadow:0 0 0 2px rgba(236,136,168,.14)}
+.v7-input-row input{flex:1;min-width:0;border:0!important;background:transparent!important;box-shadow:none!important;margin:0!important;padding:14px!important;outline:none!important;font-size:16px}
+#v7-category-emoji{flex:none;font-size:22px;min-width:32px;text-align:center}
+#v7-category-toggle{flex:none;width:46px;align-self:stretch;border:0;background:transparent;color:#9b5872;font-size:24px;cursor:pointer}
+.v7-category-list{position:relative;max-height:210px;overflow-y:auto;overscroll-behavior:contain;border:1px solid #ebd8e0;border-radius:16px;margin-top:6px;padding:5px;background:white;box-shadow:0 10px 24px rgba(80,45,60,.1);z-index:12}
+.v7-category-list[hidden]{display:none!important}
+.v7-category-choice{width:100%;display:flex;align-items:center;gap:12px;text-align:left;color:#473448;background:transparent;border:0;border-bottom:1px solid #f8edf1;padding:12px 14px;font-size:16px;cursor:pointer;border-radius:8px}
+.v7-category-choice:last-child{border-bottom:0}
+.v7-category-choice:active,.v7-category-choice:focus-visible{background:#fff0f5}
+.v7-list-status,.v7-create-status{color:#9d8799;font-size:13px;padding:12px 14px}
+.v7-create-status{color:#b85479;background:#fff5f8;border-radius:10px}
+.v7-category-hint{font-size:12px;line-height:1.4;color:#928392;margin:6px 2px 0}
