@@ -1,0 +1,20 @@
+/* Soldini — azione rapida, coordinata con i colori dell'app */
+#soldini-quickadd {
+  display: block;
+  width: calc(100% - 32px);
+  max-width: 800px;
+  margin: 14px auto 20px;
+  padding: 17px 20px;
+  border: 0;
+  border-radius: 18px;
+  background: #f28dac;
+  color: #fff;
+  font: inherit;
+  font-weight: 800;
+  font-size: 1.05rem;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(222, 105, 147, 0.12);
+  touch-action: manipulation;
+}
+#soldini-quickadd:active {transform: scale(.99);}
+#add {cursor: pointer; touch-action: manipulation;}
