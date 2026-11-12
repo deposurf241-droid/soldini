@@ -1,0 +1,12 @@
+/* Soldini V12: esclusivamente interfaccia del resoconto immagine */
+#s12-report-open{display:block;max-width:100%;margin:12px 0 18px;padding:14px 19px;border:1.5px solid #f2d3df;border-radius:18px;background:#fff;color:#c35a82;font-weight:800;font-size:1rem;cursor:pointer}
+.s12-backdrop{position:fixed;inset:0;z-index:100005;background:rgba(39,29,47,.6);display:flex;align-items:flex-end;justify-content:center}
+.s12-sheet{box-sizing:border-box;width:100%;max-width:650px;max-height:94dvh;overflow:auto;overscroll-behavior:contain;background:#fffaf7;border-radius:27px 27px 0 0;padding:21px 20px calc(22px + env(safe-area-inset-bottom));color:#40354d;box-shadow:0 -12px 42px #251b2e35}
+.s12-head{display:flex;align-items:center;justify-content:space-between;gap:12px}.s12-head h2{margin:0;font-size:1.4rem}.s12-close{width:43px;height:43px;border:0;border-radius:50%;background:#fff0f5;color:#b84c77;font-size:1.4rem}
+.s12-help{font-size:.9rem;color:#8d7b8d;line-height:1.5;margin:10px 0 18px}
+.s12-sheet label{display:block;font-size:.92rem;font-weight:750;margin:13px 0 6px}.s12-sheet select,.s12-sheet input{box-sizing:border-box;width:100%;border:1.5px solid #edd8e2;background:#fff;border-radius:13px;padding:12px;color:#40354d;font:inherit;min-height:48px}
+.s12-dual{display:grid;grid-template-columns:1fr 1fr;gap:12px}.s12-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.s12-actions button{min-height:49px;padding:11px;border:0;border-radius:14px;font-weight:800;font-size:.94rem}.s12-build{background:#ef8eaa;color:#fff}.s12-download{background:#dff4e8;color:#207c5c}.s12-download:disabled{opacity:.45}.s12-preview{width:100%;max-width:480px;display:block;margin:14px auto 4px;border-radius:17px;box-shadow:0 4px 20px #483b5023}.s12-state{font-size:.87rem;color:#9d728a;min-height:22px}.s12-note{font-size:.82rem;color:#8e8190;line-height:1.5}
+@media(min-width:700px){.s12-backdrop{align-items:center}.s12-sheet{border-radius:25px;max-height:90vh}}
+
+/* Sostituisce il vecchio generatore del resoconto con quello nuovo. */
+#soldini-report-btn{display:none!important}
