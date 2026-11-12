@@ -1,0 +1,18 @@
+/* Soldini V14 — Attivita condivise (nessun dato personale) */
+#sd14-bell{position:relative;flex-shrink:0;border:1px solid #f6cbd8;background:#fff4f7;color:#67445a;padding:11px 14px;border-radius:15px;cursor:pointer;font-weight:800;box-shadow:0 3px 12px #67315312;min-height:44px}
+#sd14-badge{position:absolute;top:-7px;right:-8px;background:#df4d79;color:white;border-radius:20px;padding:2px 6px;min-width:16px;font-size:11px;border:2px solid white}
+#sd14-badge[hidden]{display:none!important}
+#sd14-modal{position:fixed;inset:0;z-index:99999;background:#21152173;display:flex;align-items:end;justify-content:center;padding:8px;box-sizing:border-box}
+#sd14-modal[hidden]{display:none!important}
+#sd14-modal .sd14-sheet{max-height:87dvh;overflow:auto;box-sizing:border-box;width:min(100%,520px);border-radius:24px 24px 17px 17px;background:#fffdfb;box-shadow:0 8px 40px #281b2630;padding:18px 16px 28px;color:#433449}
+.sd14-top{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:0 0 14px}
+.sd14-top h2{margin:0;font-size:1.25rem}.sd14-close{background:#fce7ed;border:0;border-radius:12px;padding:9px 14px;cursor:pointer;color:#6c4055;font-size:18px}
+.sd14-note{font-size:12px;color:#786b79;line-height:1.45;margin:4px 0 12px}
+.sd14-row{display:flex;align-items:flex-start;gap:11px;background:#fff6fa;border:1px solid #f7e7ee;border-radius:15px;padding:12px;margin:9px 0}
+.sd14-ico{font-size:25px;line-height:1.2}.sd14-row-main{min-width:0;flex:1}.sd14-row-main strong{font-size:14px}.sd14-row-main small{display:block;margin-top:4px;color:#776879;font-size:12px;line-height:1.45;overflow-wrap:anywhere}
+.sd14-sum{font-weight:800;white-space:nowrap;font-size:14px}.sd14-sum.income{color:#208966}.sd14-sum.expense{color:#c34c6c}
+.sd14-empty{padding:30px 12px;text-align:center;color:#756678;background:#fff8fa;border-radius:15px}
+.sd14-filters{display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap;margin:10px 0}.sd14-filters button{padding:8px 12px;border:1px solid #efcdd9;border-radius:12px;background:white;color:#7c4960;font-size:12px;font-weight:700}
+#sd14-dup{display:none;background:#fff3db;border:1px solid #f6d49a;border-radius:12px;padding:10px 12px;font-size:12px;color:#765328;margin:8px 0}
+#sd14-dup:not([hidden]){display:block}
+@media(max-width:390px){#sd14-bell{padding:9px 11px;font-size:13px}.hello{gap:8px}}
