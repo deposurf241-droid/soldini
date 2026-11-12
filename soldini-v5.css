@@ -3,3 +3,13 @@
 .v4-pie-wrap{flex-direction:column!important;justify-content:center!important;align-items:center!important;gap:20px!important}.v4-donut{width:min(240px,70vw)!important;height:min(240px,70vw)!important;margin:auto}.v4-donut>span{width:62%!important;height:62%!important}.v4-donut strong{font-size:20px!important}.v4-pie-legend{width:100%!important;min-width:0!important}.v4-legend-item{font-size:14px!important;margin:13px 0!important}.v4-legend-item small{font-size:12px!important}
 @media(min-width:650px){.v4-pie-wrap{flex-direction:row!important}.v4-pie-legend{width:auto!important}}
 .v5-controls{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0}.v5-controls label{flex:1;min-width:125px;font-size:12px;font-weight:700;color:#806c7e}.v5-controls input,.v5-controls select{display:block;width:100%;box-sizing:border-box;padding:10px;border:1px solid #eacfdc;border-radius:10px;background:#fffaf7;color:#56445b;font-size:14px;margin-top:4px}.v5-svg{display:block;width:100%;height:auto;min-height:160px}.v5-legend{display:flex;justify-content:center;gap:20px;color:#7d6978;font-size:13px}.v5-legend b{display:inline-block;width:10px;height:10px;border-radius:100%;margin-right:5px}.v5-caption{font-size:12px;color:#8b7786;margin-top:10px}.v5-vat-list{max-height:260px;overflow:auto;border:1px solid #f1dfe9;padding:8px;border-radius:12px}.v5-vat-item{display:flex;align-items:center;gap:10px;font-size:13px;border-bottom:1px solid #f6e8ed;padding:10px 0}.v5-vat-item input{width:20px!important;flex:none!important}.v5-vat-item span{flex:1}.v5-result{padding:14px;background:#fff0d6;border-radius:12px;margin:15px 0;line-height:1.7;font-size:14px}.v5-info{font-size:12px;line-height:1.5;color:#867484}
+
+/* Soldini V6 - grafico cumulativo scuro con punti interattivi */
+.v6-dark{background:#20212a;border-radius:18px;padding:12px 5px;margin:12px 0 10px;overflow:hidden}
+.v6-svg{width:100%;max-width:100%;min-height:170px;touch-action:manipulation}
+.v6-point{cursor:pointer;outline:none;touch-action:manipulation}
+.v6-point.selected,.v6-point:focus-visible{stroke:#fff;stroke-width:4;r:9}
+.v6-detail{border:1px solid #e9d5dc;background:#fffaf9;border-radius:14px;padding:13px;margin:8px 0 12px;font-size:13px;line-height:1.65;color:#534455}
+.v6-detail b,.v6-detail span{display:block}
+.v6-totals{display:flex;justify-content:space-between;gap:7px;flex-wrap:wrap;font-size:12px;margin:10px 0;color:#564758}
+.v6-totals span{background:#fff5ef;border-radius:9px;padding:8px}
