@@ -1,0 +1,139 @@
+/* Soldini V18 — rifiniture grafiche richieste */
+:root{
+  --sd18-pink:#ee90aa;
+  --sd18-pink-deep:#d86f92;
+  --sd18-ink:#46394d;
+  --sd18-soft:#fff6f8;
+  --sd18-stroke:#f2d8e3;
+  --sd18-cream:#fffaf7;
+}
+
+body{padding-bottom:104px}
+html{scroll-behavior:smooth}
+main{padding-bottom:18px}
+.card{border-radius:24px}
+.hello{align-items:flex-start;gap:12px}
+.hello h1{font-size:clamp(2rem,5.8vw,3rem)}
+
+/* shortcut buttons */
+.sd18-shortcuts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:0 0 18px}
+.sd18-shortcuts button,
+.sd18-shortcuts .v4-button,
+.sd18-shortcuts #s12-report-open,
+.sd18-shortcuts #soldini-categories-btn{
+  width:100%;min-height:58px;margin:0!important;padding:12px 14px!important;
+  border-radius:18px!important;font-size:.98rem!important;font-weight:800!important;
+  display:flex;align-items:center;justify-content:center;text-align:center;
+  box-shadow:0 4px 16px rgba(98,58,77,.06);
+}
+.sd18-shortcuts #s12-report-open,
+.sd18-shortcuts #soldini-report-btn{background:#fff!important;border:1.5px solid var(--sd18-stroke)!important;color:#c15e83!important}
+.sd18-shortcuts #v4-rec-button{background:#f5dcab!important;color:#6b4961!important}
+.sd18-shortcuts #soldini-categories-btn{background:#fff!important;border:1.5px solid var(--sd18-stroke)!important;color:#cc6b8c!important}
+
+/* csv and bell */
+.sd17-actions .soft{min-height:48px;border-radius:18px;padding:12px 16px;font-size:1rem}
+#sd14-bell{
+  position:relative;min-width:48px;height:48px;border-radius:18px!important;
+  background:#fff8fb!important;border:1.5px solid #f2cdd9!important;color:#8d5370!important;
+  box-shadow:0 4px 14px rgba(98,58,77,.08)
+}
+#sd14-badge{
+  top:-6px!important;right:-6px!important;min-width:20px!important;height:20px;
+  padding:0 6px!important;display:grid;place-items:center;
+  background:linear-gradient(180deg,#f16f98,#df4d79)!important;font-size:11px!important;font-weight:800
+}
+
+/* cards and graphs */
+#sd18-trend-section .chart{height:220px;padding:10px 6px 6px}
+#sd18-trend-section .bar{max-width:30px;border-radius:10px 10px 4px 4px}
+#sd18-trend-section .bar-label{font-size:11px}
+#v5-line{
+  background:linear-gradient(180deg,#fffafc,#fff7fa);
+  border:1px solid #f2d8e4;border-radius:24px;padding:10px 8px;margin:10px 0 8px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.9)
+}
+.v5-svg{min-height:210px!important}
+.v5-controls label,.v5-info,.v5-caption{font-size:13px!important;line-height:1.55}
+.v5-legend{margin-top:14px;font-size:14px!important}
+.v5-legend span{display:inline-flex;align-items:center;gap:6px}
+.v5-note-strong{color:#7a6070;font-weight:700}
+
+/* compact donuts */
+#categories .v4-pie-wrap,
+#v4-income-chart .v4-pie-wrap{gap:14px!important;align-items:center!important}
+#categories .v4-donut,
+#v4-income-chart .v4-donut{width:min(190px,55vw)!important;height:min(190px,55vw)!important}
+#categories .v4-donut>span,
+#v4-income-chart .v4-donut>span{width:60%!important;height:60%!important}
+#categories .v4-donut strong,
+#v4-income-chart .v4-donut strong{font-size:17px!important}
+#categories .v4-donut small,
+#v4-income-chart .v4-donut small{font-size:11px!important}
+#categories .v4-pie-legend,
+#v4-income-chart .v4-pie-legend{width:100%!important}
+#categories .v4-legend-item,
+#v4-income-chart .v4-legend-item{margin:8px 0!important;font-size:13px!important}
+#categories .v4-legend-item small,
+#v4-income-chart .v4-legend-item small{font-size:11px!important}
+
+/* transaction list */
+#transactions{display:flex;flex-direction:column;gap:10px}
+.tx-row{
+  border:1px solid #f3e4ea;border-radius:20px;padding:14px 14px!important;background:#fff;
+  display:grid!important;grid-template-columns:58px minmax(0,1fr) auto;align-items:center;gap:12px;
+  box-shadow:0 4px 16px rgba(77,51,65,.04);border-bottom:none!important
+}
+.tx-row:hover{background:#fffafd}
+.tx-icon{
+  width:58px;height:58px;border-radius:18px!important;display:grid;place-items:center;
+  padding:0!important;font-size:28px;background:#fff3df!important
+}
+.tx-info b{font-size:1.1rem!important;line-height:1.25;color:#45374b}
+.tx-info small{
+  display:flex!important;flex-wrap:wrap;gap:6px;white-space:normal!important;overflow:visible!important;
+  text-overflow:unset!important;margin-top:6px;font-size:12px!important;line-height:1.45
+}
+.sd18-meta-pill{
+  display:inline-flex;align-items:center;gap:5px;padding:4px 9px;border-radius:999px;
+  background:#fbf3f6;color:#826d7d;border:1px solid #f0dde5
+}
+.sd18-meta-pill.sd18-pill-note{background:#fff7ef;color:#8b6e5b;border-color:#f4e4d1}
+.tx-amount{font-size:1.1rem!important;align-self:center}
+.tx-amount.pos{color:#2ea674!important}
+.tx-amount.neg{color:#d66a8d!important}
+
+/* bottom nav */
+.sd18-bottom-nav{
+  position:fixed;left:50%;bottom:calc(10px + env(safe-area-inset-bottom));transform:translateX(-50%);
+  width:min(94vw,560px);background:rgba(255,255,255,.92);backdrop-filter:blur(14px);
+  border:1px solid rgba(238,206,218,.95);border-radius:24px;box-shadow:0 10px 30px rgba(54,32,43,.12);
+  display:grid;grid-template-columns:repeat(4,1fr);padding:7px;z-index:10002
+}
+.sd18-bottom-nav button{
+  border:0;background:transparent;border-radius:18px;padding:8px 6px;color:#8d7b88;
+  display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;font-weight:700;min-height:58px
+}
+.sd18-bottom-nav button .sd18-ico{font-size:19px;line-height:1}
+.sd18-bottom-nav button.active{background:#fff1f6;color:#bd5f84}
+.sd18-bottom-nav button:active{transform:scale(.98)}
+
+/* general refinements */
+.selector.card,.filter.card{padding:18px}
+.stats .stat{border-radius:24px;padding:18px 18px}
+.balance.card{border-radius:26px}
+.section-title .primary.small{padding:10px 15px;border-radius:15px}
+
+@media(max-width:430px){
+  body{padding-bottom:112px}
+  .sd18-shortcuts{grid-template-columns:1fr 1fr}
+  .tx-row{grid-template-columns:52px minmax(0,1fr) auto;padding:12px!important;gap:10px}
+  .tx-icon{width:52px;height:52px;border-radius:16px!important;font-size:25px}
+  .tx-info b{font-size:1rem!important}
+  .tx-amount{font-size:1rem!important}
+  #categories .v4-donut,#v4-income-chart .v4-donut{width:min(170px,54vw)!important;height:min(170px,54vw)!important}
+}
+
+@media(min-width:720px){
+  .sd18-shortcuts{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
