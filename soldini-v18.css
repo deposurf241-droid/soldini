@@ -122,3 +122,7 @@ main{padding-bottom:18px}
 @media(min-width:720px){
   .sd18-shortcuts{grid-template-columns:repeat(3,minmax(0,1fr))}
 }
+
+/* V20: pulsante IVA come quarto elemento della griglia */
+.sd18-shortcuts #v5-vat-btn{background:#f5dcab!important;color:#6b4961!important;border:0!important}
+.sd18-shortcuts{grid-template-columns:repeat(2,minmax(0,1fr))!important}

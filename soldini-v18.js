@@ -73,28 +73,9 @@ function compactActionButtons(){
   holder.hidden = holder.children.length === 0;
 }
 
-function enhanceTxRows(){
-  $$('#transactions .tx-row').forEach(row => {
-    if(row.dataset.sd18done === '1') return;
-    row.dataset.sd18done = '1';
-
-    const amount = row.querySelector('.tx-amount');
-    if(amount){
-      row.classList.add(amount.classList.contains('pos') ? 'sd18-income' : 'sd18-expense');
-    }
-
-    const meta = row.querySelector('.tx-info small');
-    if(meta){
-      const tokens = meta.textContent.split('·').map(x => x.trim()).filter(Boolean);
-      if(tokens.length){
-        meta.innerHTML = tokens.map((token, index) => {
-          const extra = index >= 2 ? ' sd18-pill-note' : '';
-          return `<span class="sd18-meta-pill${extra}">${escapeHtml(token)}</span>`;
-        }).join('');
-      }
-    }
-  });
-}
+// La lista dei movimenti è gestita esclusivamente da app.js.
+// V20 non la ricostruisce e non modifica le sue righe o i relativi eventi click.
+function enhanceTxRows(){}
 
 function tagCards(){
   const incomeCard = $('#v4-income-chart')?.closest('.card');
@@ -128,64 +109,66 @@ function escapeHtml(x){
   return String(x ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
-/* V19: ripristino stabile delle ciambelle della V17.
-   La logica di app.js ridisegna #categories con barre su ogni refresh.
-   Il disegno originale V4/V17 viene ripristinato anche dopo quel refresh. */
-const sd19Colors=['#f78ea9','#ffca78','#78c9a9','#95b9f4','#bda2ef','#efaa83','#7dd7d5','#d7bf9f','#d797c9','#a4c885'];
-const sd19Money=n=>new Intl.NumberFormat('it-IT',{style:'currency',currency:'EUR'}).format(n);
-let sd19ChartQueued=false;
-function sd19ReadTransactions(){
-  const data={income:new Map(),expense:new Map()};
+
+// V20: ripristina in modo isolato le ciambelle originali V17.
+// Un solo osservatore sulla lista; niente osservatori incrociati sui grafici.
+const sd20Palette=['#f78ea9','#ffca78','#78c9a9','#95b9f4','#bda2ef','#efaa83','#7dd7d5','#d7bf9f','#d797c9','#a4c885'];
+const sd20EUR=n=>new Intl.NumberFormat('it-IT',{style:'currency',currency:'EUR'}).format(n);
+let sd20Timer=0, sd20LastSignature='';
+function sd20ReadData(){
+  const obj={income:new Map(),expense:new Map()};
   $$('#transactions .tx-row').forEach(row=>{
-    const amountEl=row.querySelector('.tx-amount');
-    const kind=amountEl?.classList.contains('pos')?'income':'expense';
-    const name=row.querySelector('.tx-info b')?.textContent?.trim()||'Altro';
-    const amount=Number((amountEl?.textContent||'').replace(/[^0-9,.-]/g,'').replace(/\./g,'').replace(',','.').replace(/^-/,'') );
-    if(Number.isFinite(amount)&&amount>0)data[kind].set(name,(data[kind].get(name)||0)+amount);
+    const elem=row.querySelector('.tx-amount');
+    const kind=elem?.classList.contains('pos')?'income':'expense';
+    const cat=row.querySelector('.tx-info b')?.textContent?.trim()||'Altro';
+    const raw=(elem?.textContent||'').replace(/[^0-9,.-]/g,'').replace(/\./g,'').replace(',','.');
+    const amount=Math.abs(Number(raw));
+    if(Number.isFinite(amount)&&amount>0)obj[kind].set(cat,(obj[kind].get(cat)||0)+amount);
   });
-  return data;
+  return obj;
 }
-function sd19PieMarkup(counts,kind){
-  const entries=[...counts.entries()].sort((a,b)=>b[1]-a[1]);
-  const total=entries.reduce((a,x)=>a+x[1],0);
-  if(!total)return '<div class="v4-empty">Nessun '+(kind==='income'?'incasso':'pagamento')+' nel periodo selezionato 🌷</div>';
+function sd20Markup(map,kind){
+  const entries=[...map.entries()].sort((a,b)=>b[1]-a[1]);
+  const total=entries.reduce((sum,entry)=>sum+entry[1],0);
+  if(!total)return `<div class="v4-empty">Nessun ${kind==='income'?'incasso':'pagamento'} nel periodo selezionato 🌷</div>`;
   let angle=0;
-  const gradient=entries.map(([,value],i)=>{const start=angle;angle+=value/total*100;return `${sd19Colors[i%sd19Colors.length]} ${start}% ${angle}%`;}).join(',');
-  return `<div class="v4-pie-wrap"><div class="v4-donut" style="background:conic-gradient(${gradient})"><span><strong>${escapeHtml(sd19Money(total))}</strong><small>${kind==='income'?'entrate':'spese'} totali</small></span></div><div class="v4-pie-legend">${entries.map(([label,value],i)=>`<div class="v4-legend-item"><i style="background:${sd19Colors[i%sd19Colors.length]}"></i><span>${escapeHtml(label)}</span><b>${(value/total*100).toFixed(1).replace('.',',')}% <small>${escapeHtml(sd19Money(value))}</small></b></div>`).join('')}</div></div>`;
+  const bg=entries.map(([,amount],i)=>{
+    const begin=angle;
+    angle+=amount/total*100;
+    return `${sd20Palette[i%sd20Palette.length]} ${begin}% ${angle}%`;
+  }).join(',');
+  const rows=entries.map(([name,amount],i)=>`<div class="v4-legend-item"><i style="background:${sd20Palette[i%sd20Palette.length]}"></i><span>${escapeHtml(name)}</span><b>${(amount/total*100).toFixed(1).replace('.',',')}% <small>${escapeHtml(sd20EUR(amount))}</small></b></div>`).join('');
+  return `<div class="v4-pie-wrap"><div class="v4-donut" style="background:conic-gradient(${bg})"><span><strong>${escapeHtml(sd20EUR(total))}</strong><small>${kind==='income'?'entrate':'spese'} totali</small></span></div><div class="v4-pie-legend">${rows}</div></div>`;
 }
-function sd19RestoreDonuts(){
+function sd20RenderPies(){
+  const transactions=$('#transactions');
   const expense=$('#categories');
   const income=$('#v4-income-chart');
-  if(!expense||!income)return;
-  // Do not touch a correct V17 donut (or its empty state).
-  const needsExpense=!expense.querySelector('.v4-pie-wrap, .v4-empty');
-  const needsIncome=!income.querySelector('.v4-pie-wrap, .v4-empty');
-  if(!needsExpense&&!needsIncome)return;
-  const tx=sd19ReadTransactions();
-  if(needsExpense)expense.innerHTML=sd19PieMarkup(tx.expense,'expense');
-  if(needsIncome)income.innerHTML=sd19PieMarkup(tx.income,'income');
-}
-function sd19QueueDonuts(){
-  if(sd19ChartQueued)return;
-  sd19ChartQueued=true;
-  queueMicrotask(()=>{sd19ChartQueued=false;sd19RestoreDonuts();});
-}
-function sd19ObserveDonuts(){
-  for(const selector of ['#transactions','#categories','#v4-income-chart']){
-    const host=$(selector);
-    if(!host||host.dataset.sd19Observed)return;
-    host.dataset.sd19Observed='1';
-    new MutationObserver(sd19QueueDonuts).observe(host,{childList:true});
+  if(!transactions||!expense||!income)return;
+  // Non sovrascrivere grafici con risultati vuoti se Firebase sta ancora caricando.
+  if(!transactions.querySelector('.tx-row'))return;
+  const data=sd20ReadData();
+  const signature=JSON.stringify([...[...data.expense],...[...data.income]]);
+  if(signature!==sd20LastSignature || !expense.querySelector('.v4-donut') || !income.querySelector('.v4-donut, .v4-empty')){
+    sd20LastSignature=signature;
+    expense.innerHTML=sd20Markup(data.expense,'expense');
+    income.innerHTML=sd20Markup(data.income,'income');
   }
-  sd19QueueDonuts();
+}
+function sd20Schedule(){
+  clearTimeout(sd20Timer);
+  sd20Timer=setTimeout(sd20RenderPies,120);
+}
+function sd20StartPies(){
+  const history=$('#transactions');
+  if(history&&!history.dataset.sd20watch){
+    history.dataset.sd20watch='1';
+    new MutationObserver(sd20Schedule).observe(history,{childList:true});
+  }
+  sd20Schedule();
 }
 
 function observe(){
-  const tx = $('#transactions');
-  if(tx && !tx.dataset.sd18observe){
-    tx.dataset.sd18observe = '1';
-    new MutationObserver(() => enhanceTxRows()).observe(tx, {childList:true, subtree:true});
-  }
 
   const app = $('#app');
   if(app && !app.dataset.sd18observe){
@@ -195,7 +178,7 @@ function observe(){
       tagCards();
       ensureBottomNav();
       enhanceQuickHints();
-      sd19ObserveDonuts();
+      sd20StartPies();
     }).observe(app, {childList:true, subtree:true});
   }
 }
@@ -214,14 +197,14 @@ function boot(){
   ensureBottomNav();
   enhanceQuickHints();
   observe();
-  sd19ObserveDonuts();
+  sd20StartPies();
 
   // Some modules insert buttons later.
   setInterval(() => {
     compactActionButtons();
     tagCards();
     enhanceQuickHints();
-    sd19ObserveDonuts();
+    sd20StartPies();
   }, 1200);
 }
 
