@@ -21,9 +21,13 @@ let initialAuthRead = false;
 const appRoot = $('#app');
 if(appRoot){
   const greeting = $('.hello');
-  const btn = document.createElement('button');
-  btn.type='button';btn.id='sd14-bell';btn.setAttribute('aria-label','Apri attività di famiglia');btn.innerHTML='🔔 <span id="sd14-badge" hidden>0</span>';
-  greeting?.appendChild(btn);
+  // V17: il pulsante e' gia' presente nell'HTML: non duplicarlo.
+  let btn = $('#sd14-bell');
+  if (!btn) {
+    btn = document.createElement('button');
+    btn.type='button';btn.id='sd14-bell';btn.setAttribute('aria-label','Apri attività di famiglia');btn.innerHTML='🔔 <span id="sd14-badge" hidden>0</span>';
+    greeting?.appendChild(btn);
+  }
   const dialog=document.createElement('div');dialog.id='sd14-modal';dialog.hidden=true;
   dialog.innerHTML=`<div class="sd14-sheet" role="dialog" aria-modal="true" aria-label="Attività di famiglia">
     <div class="sd14-top"><h2>🔔 Attività di famiglia</h2><button type="button" class="sd14-close" aria-label="Chiudi">✕</button></div>

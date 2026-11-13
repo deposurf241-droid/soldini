@@ -14,11 +14,16 @@
 <link rel="stylesheet" href="soldini-v4.css?v=4">
 <link rel="stylesheet" href="soldini-v5.css?v=6">
 <link rel="stylesheet" href="soldini-v7.css?v=7">
-<link rel="stylesheet" href="soldini-report.css?v=16">
-<link rel="stylesheet" href="soldini-v14.css?v=16">
+<link rel="stylesheet" href="soldini-report.css?v=17">
+<link rel="stylesheet" href="soldini-v14.css?v=17">
 <style>
 #soldini-quick-add {display:block;width:100%;margin:18px 0 20px;padding:16px 18px;border:0;border-radius:18px;background:#ee90aa;color:white;font-size:1.08rem;font-weight:800;cursor:pointer;min-height:55px}
 #soldini-quick-add:active {transform:scale(.99)}
+
+/* V17: campanella sempre presente nell'intestazione dell'app */
+.sd17-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-shrink:0}
+.sd17-actions #sd14-bell{display:inline-flex!important;align-items:center;justify-content:center;min-width:48px;height:48px;font-size:21px;line-height:1}
+@media(max-width:430px){.sd17-actions{gap:6px}.sd17-actions #sd14-bell{min-width:42px;height:42px;padding:7px!important}.sd17-actions #export{padding-left:9px;padding-right:9px}}
 </style>
 </head>
 <body>
@@ -27,7 +32,7 @@
 <section id="setup" class="card hidden"><h2>🌷 Prima configurazione</h2><p>Per sincronizzare i tre telefoni serve il tuo progetto Firebase gratuito. Inserisci le credenziali nel file <code>firebase-config.js</code>, poi pubblica l'app seguendo il README.</p></section>
 <section id="auth" class="card auth hidden"><h1>Ciao! 👋</h1><p>Entra per vedere solo le tue spese e i bilanci condivisi con la famiglia.</p><form id="auth-form"><label>Email<input id="email" type="email" autocomplete="email" required></label><label>Password<input id="password" type="password" minlength="6" autocomplete="current-password" required></label><button type="submit" class="primary">Accedi 💛</button></form><p class="muted">Accesso riservato ai tre account autorizzati della famiglia.</p><p id="auth-error" class="error"></p></section>
 <section id="app" class="hidden">
-<div class="hello"><div><div class="eyebrow">ECCO IL TUO PORTAFOGLIO</div><h1 id="greeting" title="Tocca per impostare il nome">Come va oggi? ☀️</h1></div><button id="export" class="soft">⬇ CSV</button></div>
+<div class="hello"><div><div class="eyebrow">ECCO IL TUO PORTAFOGLIO</div><h1 id="greeting" title="Tocca per impostare il nome">Come va oggi? ☀️</h1></div><div class="sd17-actions"><button id="sd14-bell" type="button" aria-label="Apri attività di famiglia" title="Attività di famiglia">🔔 <span id="sd14-badge" hidden>0</span></button><button id="export" class="soft">⬇ CSV</button></div></div>
 <button id="soldini-quick-add" type="button">＋ Aggiungi movimento</button>
 <div class="selector card"><label>Visualizza <select id="space-select"></select></label><div class="subrow"><span id="scope-hint">Solo tuo</span><button id="spaces-button" class="link">⚙ Gestisci spazi</button></div></div>
 <div class="filter card"><div class="chips"><button class="chip active" data-period="month">Mese</button><button class="chip" data-period="week">Settimana</button><button class="chip" data-period="day">Giorno</button><button class="chip" data-period="all">Tutto</button><button class="chip" data-period="custom">Date</button></div><div id="range" class="date-grid hidden"><label>Dal<input type="date" id="from"></label><label>Al<input type="date" id="to"></label></div><div id="period-label" class="muted"></div></div>
@@ -56,8 +61,8 @@
 <script type="module" src="soldini-v4.js?v=4"></script>
 <script type="module" src="soldini-v5.js?v=6"></script>
 <script type="module" src="soldini-v7.js?v=7"></script>
-<script type="module" src="soldini-report.js?v=16"></script>
-<script type="module" src="soldini-v14.js?v=16"></script>
+<script type="module" src="soldini-report.js?v=17"></script>
+<script type="module" src="soldini-v14.js?v=17"></script>
 <script>
 document.getElementById('soldini-quick-add').addEventListener('click',function(){
   var original=document.getElementById('add');
