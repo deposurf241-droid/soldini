@@ -126,3 +126,15 @@ main{padding-bottom:18px}
 /* V20: pulsante IVA come quarto elemento della griglia */
 .sd18-shortcuts #v5-vat-btn{background:#f5dcab!important;color:#6b4961!important;border:0!important}
 .sd18-shortcuts{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+
+
+/* V23 - Nascondi la barra inferiore durante finestre e moduli aperti.
+   Safari iOS 18 supporta :has(); quando si chiude la finestra la barra ricompare.
+   Non modifica i movimenti, i grafici, le categorie o Firebase. */
+body:has(.modal:not(.hidden)) #sd18-bottom-nav,
+body:has(.extra-modal) #sd18-bottom-nav,
+body:has(.v4-overlay) #sd18-bottom-nav,
+body:has(.s12-backdrop) #sd18-bottom-nav,
+body:has(#sd14-modal:not([hidden])) #sd18-bottom-nav {
+  display: none !important;
+}
