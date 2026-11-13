@@ -9,17 +9,19 @@
 <title>Soldini 🌈</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/svg+xml" href="icon.svg">
-<link rel="stylesheet" href="style.css?v=18">
-<link rel="stylesheet" href="soldini-extra.css?v=18">
-<link rel="stylesheet" href="soldini-v4.css?v=18">
-<link rel="stylesheet" href="soldini-v5.css?v=18">
-<link rel="stylesheet" href="soldini-v7.css?v=18">
-<link rel="stylesheet" href="soldini-report.css?v=18">
-<link rel="stylesheet" href="soldini-v14.css?v=18">
-<link rel="stylesheet" href="soldini-v18.css?v=20">
+<link rel="stylesheet" href="style.css?v=4">
+<link rel="stylesheet" href="soldini-extra.css?v=4">
+<link rel="stylesheet" href="soldini-v4.css?v=4">
+<link rel="stylesheet" href="soldini-v5.css?v=6">
+<link rel="stylesheet" href="soldini-v7.css?v=7">
+<link rel="stylesheet" href="soldini-report.css?v=17">
+<link rel="stylesheet" href="soldini-v14.css?v=17">
+<link rel="stylesheet" href="soldini-v18.css?v=21">
 <style>
-#soldini-quick-add{display:block;width:100%;margin:18px 0 14px;padding:16px 18px;border:0;border-radius:18px;background:#ee90aa;color:white;font-size:1.08rem;font-weight:800;cursor:pointer;min-height:55px}
-#soldini-quick-add:active{transform:scale(.99)}
+#soldini-quick-add {display:block;width:100%;margin:18px 0 20px;padding:16px 18px;border:0;border-radius:18px;background:#ee90aa;color:white;font-size:1.08rem;font-weight:800;cursor:pointer;min-height:55px}
+#soldini-quick-add:active {transform:scale(.99)}
+
+/* V17: campanella sempre presente nell'intestazione dell'app */
 .sd17-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-shrink:0}
 .sd17-actions #sd14-bell{display:inline-flex!important;align-items:center;justify-content:center;min-width:48px;height:48px;font-size:21px;line-height:1}
 @media(max-width:430px){.sd17-actions{gap:6px}.sd17-actions #sd14-bell{min-width:42px;height:42px;padding:7px!important}.sd17-actions #export{padding-left:9px;padding-right:9px}}
@@ -38,6 +40,8 @@
 <div class="filter card"><div class="chips"><button class="chip active" data-period="month">Mese</button><button class="chip" data-period="week">Settimana</button><button class="chip" data-period="day">Giorno</button><button class="chip" data-period="all">Tutto</button><button class="chip" data-period="custom">Date</button></div><div id="range" class="date-grid hidden"><label>Dal<input type="date" id="from"></label><label>Al<input type="date" id="to"></label></div><div id="period-label" class="muted"></div></div>
 <div class="stats"><div class="stat income"><div>↙ Entrate</div><strong id="income">€ 0,00</strong></div><div class="stat expense"><div>↗ Uscite</div><strong id="expense">€ 0,00</strong></div></div><div class="balance card"><span>Saldo del periodo ✨</span><strong id="balance">€ 0,00</strong><small id="balance-hint">Entrate meno uscite</small></div>
 <div class="card" id="sd18-trend-section"><div class="section-title"><h2>📊 Il tuo andamento</h2></div><div id="chart" class="chart"></div><div class="legend"><span>🟢 Entrate</span><span>😢💸 Spese</span></div></div>
+<div class="card"><div class="section-title"><h2>🍰 Spese per categoria</h2></div><div class="pie-layout"><div id="expense-pie" class="expense-pie"></div><div id="pie-legend" class="pie-legend"></div></div></div>
+<div class="card"><div class="section-title"><h2>📈 Entrate e spese mese per mese</h2></div><div id="monthly-chart" class="monthly-chart"></div><div class="legend"><span>🤑 Entrate</span><span>😢💸 Spese</span></div><div id="monthly-profit" class="monthly-profit"></div></div>
 <div class="card"><div class="section-title"><h2>🧩 Dove spendi</h2></div><div id="categories" class="categories"></div></div>
 <div class="card"><div class="section-title"><h2>🧾 Movimenti</h2><button id="add" class="primary small">+ Aggiungi</button></div><div id="transactions"></div></div>
 </section></main>
@@ -55,14 +59,14 @@
 </form></div></div>
 <div class="modal hidden" id="spaces-modal"><div class="sheet"><div class="section-title"><h2>🏡 Spazi di famiglia</h2><button class="x" data-close="spaces-modal">✕</button></div><p class="muted">Lo spazio Personale è privato. Crea Casa o Negozio per condividerlo.</p><form id="space-form"><label>Nome nuovo spazio condiviso<input id="space-name" maxlength="40" required placeholder="Es. Negozio"></label><button class="primary" type="submit">+ Crea spazio</button></form><div id="spaces-list"></div><div class="uid-box"><b>Il tuo codice utente (UID)</b><div id="uid"></div><button id="copy-uid" class="soft">Copia codice</button><p>Per invitare mamma o papà: chiedi loro di registrarsi e inviarti il loro UID. Aggiungilo nello spazio condiviso qui sotto. Non servono password altrui.</p></div><p id="space-error" class="error"></p></div></div>
 <div id="toast" role="status" class="toast hidden"></div>
-<script type="module" src="app.js?v=18"></script>
-<script type="module" src="soldini-extra.js?v=18"></script>
-<script type="module" src="soldini-v4.js?v=18"></script>
-<script type="module" src="soldini-v5.js?v=18"></script>
-<script type="module" src="soldini-v7.js?v=18"></script>
-<script type="module" src="soldini-report.js?v=18"></script>
-<script type="module" src="soldini-v14.js?v=18"></script>
-<script type="module" src="soldini-v18.js?v=20"></script>
+<script type="module" src="app.js?v=4"></script>
+<script type="module" src="soldini-extra.js?v=4"></script>
+<script type="module" src="soldini-v4.js?v=4"></script>
+<script type="module" src="soldini-v5.js?v=6"></script>
+<script type="module" src="soldini-v7.js?v=7"></script>
+<script type="module" src="soldini-report.js?v=17"></script>
+<script type="module" src="soldini-v14.js?v=17"></script>
+<script type="module" src="soldini-v18.js?v=21"></script>
 <script>
 document.getElementById('soldini-quick-add').addEventListener('click',function(){
   var original=document.getElementById('add');

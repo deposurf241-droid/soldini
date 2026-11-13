@@ -1,212 +1,74 @@
-/* Soldini V18 — miglioramenti grafici non distruttivi */
-const $ = s => document.querySelector(s);
-const $$ = s => [...document.querySelectorAll(s)];
+/* Soldini V21 — solo grafica e navigazione.
+   NON tocca app.js, Firebase, movimenti, grafici o saldi.
+   Le ciambelle originali sono gestite esclusivamente da soldini-v4.js. */
+const sd21 = selector => document.querySelector(selector);
+const sd21All = selector => [...document.querySelectorAll(selector)];
 
-let booted = false;
-
-function ensureBottomNav(){
-  const nav = $('#sd18-bottom-nav');
-  const app = $('#app');
-  if(!nav || !app) return;
-
-  const items = [
-    { id:'home', icon:'🏠', label:'Home', getTarget:()=>$('#sd18-home-section') || $('.hello') },
-    { id:'saldo', icon:'💶', label:'Saldo', getTarget:()=>$('#sd18-summary-section') || $('.stats') },
-    { id:'grafici', icon:'📈', label:'Grafici', getTarget:()=>$('#v5-line')?.closest('.card') || $('#sd18-trend-section') },
-    { id:'movimenti', icon:'🧾', label:'Movimenti', getTarget:()=>$('#transactions')?.closest('.card') }
+function sd21Shortcuts(){
+  const holder=sd21('#sd18-shortcuts');
+  if(!holder)return;
+  const links=[
+    ['#s12-report-open','📸 Resoconto'],
+    ['#v4-rec-button','🔁 Ricorrenti'],
+    ['#soldini-categories-btn','🏷️ Categorie'],
+    ['#v5-vat-btn','🧾 IVA']
   ];
-
-  if(!nav.dataset.ready){
-    nav.innerHTML = items.map(item =>
-      `<button type="button" data-target="${item.id}"><span class="sd18-ico">${item.icon}</span><span>${item.label}</span></button>`
-    ).join('');
-    nav.dataset.ready = '1';
-    nav.classList.remove('hidden');
-
-    nav.addEventListener('click', e => {
-      const btn = e.target.closest('button[data-target]');
-      if(!btn) return;
-      const item = items.find(x => x.id === btn.dataset.target);
-      const target = item?.getTarget();
-      if(target){
-        target.scrollIntoView({behavior:'smooth', block:'start'});
-      }
-    });
-
-    const setActive = () => {
-      const buttons = $$(`#${nav.id} button[data-target]`);
-      let activeId = 'home';
-      for(const item of items){
-        const target = item.getTarget();
-        if(!target) continue;
-        const rect = target.getBoundingClientRect();
-        if(rect.top <= window.innerHeight * 0.35){
-          activeId = item.id;
-        }
-      }
-      buttons.forEach(btn => btn.classList.toggle('active', btn.dataset.target === activeId));
-    };
-    window.addEventListener('scroll', setActive, {passive:true});
-    window.addEventListener('resize', setActive);
-    setTimeout(setActive, 600);
-  }
-}
-
-function compactActionButtons(){
-  const holder = $('#sd18-shortcuts');
-  if(!holder) return;
-  const candidates = [
-    ['#s12-report-open', '📸 Resoconto'],
-    ['#v4-rec-button', '🔁 Ricorrenti'],
-    ['#soldini-categories-btn', '🏷️ Categorie'],
-    ['#v5-vat-btn', '🧾 IVA']
-  ];
-
-  candidates.forEach(([selector, label]) => {
-    const button = $(selector);
-    if(button && button.parentElement !== holder){
-      button.textContent = label;
+  for(const [selector,label] of links){
+    const button=sd21(selector);
+    if(!button)continue;
+    if(button.parentElement!==holder){
       holder.appendChild(button);
     }
+    if(button.textContent!==label)button.textContent=label;
+  }
+}
+
+function sd21BottomNav(){
+  const nav=sd21('#sd18-bottom-nav');
+  if(!nav||nav.dataset.initialized)return;
+  const items=[
+    {id:'home',label:'Home',icon:'🏠',target:()=>sd21('#sd18-home-section')},
+    {id:'saldo',label:'Saldo',icon:'💶',target:()=>sd21('.stats')},
+    {id:'grafici',label:'Grafici',icon:'📈',target:()=>sd21('#v5-line')?.closest('.card')||sd21('#sd18-trend-section')},
+    {id:'movimenti',label:'Movimenti',icon:'🧾',target:()=>sd21('#transactions')?.closest('.card')}
+  ];
+  nav.innerHTML=items.map(item=>`<button type="button" data-sd21-nav="${item.id}"><span class="sd18-ico">${item.icon}</span><span>${item.label}</span></button>`).join('');
+  nav.dataset.initialized='1';
+  nav.addEventListener('click',e=>{
+    const button=e.target.closest('[data-sd21-nav]');
+    if(!button)return;
+    const item=items.find(i=>i.id===button.dataset.sd21Nav);
+    const target=item?.target();
+    if(target)target.scrollIntoView({behavior:'smooth',block:'start'});
+    sd21All('#sd18-bottom-nav button').forEach(b=>b.classList.toggle('active',b===button));
   });
-
-  holder.hidden = holder.children.length === 0;
-}
-
-// La lista dei movimenti è gestita esclusivamente da app.js.
-// V20 non la ricostruisce e non modifica le sue righe o i relativi eventi click.
-function enhanceTxRows(){}
-
-function tagCards(){
-  const incomeCard = $('#v4-income-chart')?.closest('.card');
-  const expenseCard = $('#categories')?.closest('.card');
-  const lineCard = $('#v5-line')?.closest('.card');
-  if(incomeCard) incomeCard.classList.add('sd18-income-donut-card');
-  if(expenseCard) expenseCard.classList.add('sd18-expense-donut-card');
-  if(lineCard) lineCard.classList.add('sd18-cumulative-card');
-
-  const lineTitle = lineCard?.querySelector('h2');
-  if(lineTitle && !lineTitle.dataset.sd18done){
-    lineTitle.dataset.sd18done = '1';
-    if(!/cumulative/i.test(lineTitle.textContent)){
-      lineTitle.textContent = '📈 Entrate e spese cumulative nel tempo';
+  function update(){
+    const app=sd21('#app');
+    if(!app||app.classList.contains('hidden')){nav.classList.add('hidden');return;}
+    nav.classList.remove('hidden');
+    let selected='home';
+    for(const item of items){
+      const target=item.target();
+      if(target && target.getBoundingClientRect().top<=innerHeight*.35)selected=item.id;
     }
+    sd21All('#sd18-bottom-nav button').forEach(b=>b.classList.toggle('active',b.dataset.sd21Nav===selected));
   }
+  addEventListener('scroll',update,{passive:true});
+  addEventListener('resize',update);
+  setInterval(update,1600);
+  update();
 }
 
-function enhanceQuickHints(){
-  const note = $('#v5-note');
-  if(note && !note.dataset.sd18done){
-    note.dataset.sd18done = '1';
-    if(!note.textContent.trim()){
-      note.textContent = 'Tocca i punti del grafico per leggere meglio l’andamento del periodo.';
-    }
-    note.classList.add('v5-note-strong');
-  }
+function sd21Boot(){
+  sd21BottomNav();
+  sd21Shortcuts();
+  // Le estensioni V17 inseriscono i pulsanti dopo il caricamento.
+  // Cerchiamo solo quei quattro pulsanti, senza osservare né riscrivere i movimenti.
+  let tries=0;
+  const timer=setInterval(()=>{
+    sd21Shortcuts();
+    if(++tries>=35)clearInterval(timer);
+  },500);
 }
-
-function escapeHtml(x){
-  return String(x ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-}
-
-
-// V20: ripristina in modo isolato le ciambelle originali V17.
-// Un solo osservatore sulla lista; niente osservatori incrociati sui grafici.
-const sd20Palette=['#f78ea9','#ffca78','#78c9a9','#95b9f4','#bda2ef','#efaa83','#7dd7d5','#d7bf9f','#d797c9','#a4c885'];
-const sd20EUR=n=>new Intl.NumberFormat('it-IT',{style:'currency',currency:'EUR'}).format(n);
-let sd20Timer=0, sd20LastSignature='';
-function sd20ReadData(){
-  const obj={income:new Map(),expense:new Map()};
-  $$('#transactions .tx-row').forEach(row=>{
-    const elem=row.querySelector('.tx-amount');
-    const kind=elem?.classList.contains('pos')?'income':'expense';
-    const cat=row.querySelector('.tx-info b')?.textContent?.trim()||'Altro';
-    const raw=(elem?.textContent||'').replace(/[^0-9,.-]/g,'').replace(/\./g,'').replace(',','.');
-    const amount=Math.abs(Number(raw));
-    if(Number.isFinite(amount)&&amount>0)obj[kind].set(cat,(obj[kind].get(cat)||0)+amount);
-  });
-  return obj;
-}
-function sd20Markup(map,kind){
-  const entries=[...map.entries()].sort((a,b)=>b[1]-a[1]);
-  const total=entries.reduce((sum,entry)=>sum+entry[1],0);
-  if(!total)return `<div class="v4-empty">Nessun ${kind==='income'?'incasso':'pagamento'} nel periodo selezionato 🌷</div>`;
-  let angle=0;
-  const bg=entries.map(([,amount],i)=>{
-    const begin=angle;
-    angle+=amount/total*100;
-    return `${sd20Palette[i%sd20Palette.length]} ${begin}% ${angle}%`;
-  }).join(',');
-  const rows=entries.map(([name,amount],i)=>`<div class="v4-legend-item"><i style="background:${sd20Palette[i%sd20Palette.length]}"></i><span>${escapeHtml(name)}</span><b>${(amount/total*100).toFixed(1).replace('.',',')}% <small>${escapeHtml(sd20EUR(amount))}</small></b></div>`).join('');
-  return `<div class="v4-pie-wrap"><div class="v4-donut" style="background:conic-gradient(${bg})"><span><strong>${escapeHtml(sd20EUR(total))}</strong><small>${kind==='income'?'entrate':'spese'} totali</small></span></div><div class="v4-pie-legend">${rows}</div></div>`;
-}
-function sd20RenderPies(){
-  const transactions=$('#transactions');
-  const expense=$('#categories');
-  const income=$('#v4-income-chart');
-  if(!transactions||!expense||!income)return;
-  // Non sovrascrivere grafici con risultati vuoti se Firebase sta ancora caricando.
-  if(!transactions.querySelector('.tx-row'))return;
-  const data=sd20ReadData();
-  const signature=JSON.stringify([...[...data.expense],...[...data.income]]);
-  if(signature!==sd20LastSignature || !expense.querySelector('.v4-donut') || !income.querySelector('.v4-donut, .v4-empty')){
-    sd20LastSignature=signature;
-    expense.innerHTML=sd20Markup(data.expense,'expense');
-    income.innerHTML=sd20Markup(data.income,'income');
-  }
-}
-function sd20Schedule(){
-  clearTimeout(sd20Timer);
-  sd20Timer=setTimeout(sd20RenderPies,120);
-}
-function sd20StartPies(){
-  const history=$('#transactions');
-  if(history&&!history.dataset.sd20watch){
-    history.dataset.sd20watch='1';
-    new MutationObserver(sd20Schedule).observe(history,{childList:true});
-  }
-  sd20Schedule();
-}
-
-function observe(){
-
-  const app = $('#app');
-  if(app && !app.dataset.sd18observe){
-    app.dataset.sd18observe = '1';
-    new MutationObserver(() => {
-      compactActionButtons();
-      tagCards();
-      ensureBottomNav();
-      enhanceQuickHints();
-      sd20StartPies();
-    }).observe(app, {childList:true, subtree:true});
-  }
-}
-
-function boot(){
-  if(booted) return;
-  const app = $('#app');
-  if(!app){
-    setTimeout(boot, 300);
-    return;
-  }
-  booted = true;
-  compactActionButtons();
-  enhanceTxRows();
-  tagCards();
-  ensureBottomNav();
-  enhanceQuickHints();
-  observe();
-  sd20StartPies();
-
-  // Some modules insert buttons later.
-  setInterval(() => {
-    compactActionButtons();
-    tagCards();
-    enhanceQuickHints();
-    sd20StartPies();
-  }, 1200);
-}
-
-if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
-else boot();
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',sd21Boot,{once:true});
+else sd21Boot();
