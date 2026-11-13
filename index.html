@@ -18,6 +18,10 @@
 <link rel="stylesheet" href="soldini-v14.css?v=17">
 <link rel="stylesheet" href="soldini-v18.css?v=23">
 <style>
+/* V24: la barra resta sotto ai pannelli anche se JS fosse in ritardo. */
+#sd18-bottom-nav { z-index: 9 !important; }
+/* Lo script applica questa classe soltanto quando una finestra e' aperta. */
+body.sd24-dialog-open #sd18-bottom-nav { display: none !important; }
 #soldini-quick-add {display:block;width:100%;margin:18px 0 20px;padding:16px 18px;border:0;border-radius:18px;background:#ee90aa;color:white;font-size:1.08rem;font-weight:800;cursor:pointer;min-height:55px}
 #soldini-quick-add:active {transform:scale(.99)}
 
@@ -74,5 +78,38 @@ document.getElementById('soldini-quick-add').addEventListener('click',function()
   if(original){original.click();}
   else{alert('Il modulo non è disponibile: verifica che la pagina sia caricata completamente.');}
 });
+</script>
+<script>
+/* V24 - Controllo indipendente delle finestre. Non tocca Firebase, dati o grafici. */
+(function(){
+  const nav = document.getElementById('sd18-bottom-nav');
+  if(!nav) return;
+  const overlays = '#tx-modal, #spaces-modal, .extra-modal, .v4-overlay, .s12-backdrop, #sd14-modal';
+  let queued = false;
+  function isOpen(el){
+    if(el.hidden || el.classList.contains('hidden')) return false;
+    const style = window.getComputedStyle(el);
+    return style.display !== 'none' && style.visibility !== 'hidden';
+  }
+  function update(){
+    queued = false;
+    const open = [...document.querySelectorAll(overlays)].some(isOpen);
+    if(document.body.classList.contains('sd24-dialog-open') !== open){
+      document.body.classList.toggle('sd24-dialog-open', open);
+    }
+  }
+  function queueUpdate(){
+    if(queued) return;
+    queued = true;
+    queueMicrotask(update);
+  }
+  new MutationObserver(queueUpdate).observe(document.body, {
+    subtree: true, childList: true, attributes: true,
+    attributeFilter: ['class', 'hidden']
+  });
+  document.addEventListener('click',queueUpdate,true);
+  document.addEventListener('keydown',queueUpdate,true);
+  update();
+})();
 </script>
 </body></html>
