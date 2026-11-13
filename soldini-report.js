@@ -68,10 +68,10 @@ function v13Trend(g,x,y,w,h,items,start,end){
   let inc=0,exp=0;p=p.map(z=>({...z,income:inc+=z.income,expense:exp+=z.expense}));
   const xx=x+112,rx=x+w-54,top=y+134,bottom=y+h-87,mx=Math.max(1,...p.map(z=>Math.max(z.income,z.expense)));
   g.save();g.strokeStyle='#eedde5';g.lineWidth=2;g.setLineDash([4,7]);for(let i=0;i<5;i++){let gy=bottom-(bottom-top)*i/4;g.beginPath();g.moveTo(xx,gy);g.lineTo(rx,gy);g.stroke();v13Text(g,Math.round(mx*i/4).toLocaleString('it-IT'),xx-15,gy,17,'#b09aa8',500,'right')}g.restore();
-  for(let [kind,color,light] of [['income','#20af77','#d3f7e8'],['expense','#ed5d8c','#ffdee9']]){
+  for(let [kind,color] of [['income','#20af77'],['expense','#ed5d8c']]){
     if(!p.length)continue;
     const point=(z,i)=>({x:xx+(rx-xx)*(p.length===1?.5:i/(p.length-1)),y:bottom-(bottom-top)*z[kind]/mx});
-    g.save();g.fillStyle=light;g.beginPath();g.moveTo(point(p[0],0).x,bottom);p.forEach((z,i)=>{let q=point(z,i);g.lineTo(q.x,q.y)});g.lineTo(point(p.at(-1),p.length-1).x,bottom);g.closePath();g.fill();
+    g.save();
     g.strokeStyle=color;g.lineWidth=6;g.lineJoin='round';g.lineCap='round';g.beginPath();p.forEach((z,i)=>{let q=point(z,i);i?g.lineTo(q.x,q.y):g.moveTo(q.x,q.y)});g.stroke();
     const stride=Math.max(1,Math.ceil(p.length/8));p.forEach((z,i)=>{if(i%stride&&i!==p.length-1)return;let q=point(z,i);g.fillStyle='#fff';g.beginPath();g.arc(q.x,q.y,7.5,0,Math.PI*2);g.fill();g.strokeStyle=color;g.lineWidth=4;g.stroke()});g.restore();
     const last=point(p.at(-1),p.length-1);v13Rounded(g,rx-109,last.y+(kind==='income'?-38:13),111,34,17,color);v13Text(g,v13Money(p.at(-1)[kind]),rx-53,last.y+(kind==='income'?-21:30),17,'#fff',750,'center');
