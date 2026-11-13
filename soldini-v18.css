@@ -30,6 +30,7 @@ main{padding-bottom:18px}
 .sd18-shortcuts #soldini-report-btn{background:#fff!important;border:1.5px solid var(--sd18-stroke)!important;color:#c15e83!important}
 .sd18-shortcuts #v4-rec-button{background:#f5dcab!important;color:#6b4961!important}
 .sd18-shortcuts #soldini-categories-btn{background:#fff!important;border:1.5px solid var(--sd18-stroke)!important;color:#cc6b8c!important}
+.sd18-shortcuts #v5-vat-btn{background:#f5dcab!important;color:#6b4961!important;border:0!important}
 
 /* csv and bell */
 .sd17-actions .soft{min-height:48px;border-radius:18px;padding:12px 16px;font-size:1rem}
@@ -59,23 +60,8 @@ main{padding-bottom:18px}
 .v5-legend span{display:inline-flex;align-items:center;gap:6px}
 .v5-note-strong{color:#7a6070;font-weight:700}
 
-/* compact donuts */
-#categories .v4-pie-wrap,
-#v4-income-chart .v4-pie-wrap{gap:14px!important;align-items:center!important}
-#categories .v4-donut,
-#v4-income-chart .v4-donut{width:min(190px,55vw)!important;height:min(190px,55vw)!important}
-#categories .v4-donut>span,
-#v4-income-chart .v4-donut>span{width:60%!important;height:60%!important}
-#categories .v4-donut strong,
-#v4-income-chart .v4-donut strong{font-size:17px!important}
-#categories .v4-donut small,
-#v4-income-chart .v4-donut small{font-size:11px!important}
-#categories .v4-pie-legend,
-#v4-income-chart .v4-pie-legend{width:100%!important}
-#categories .v4-legend-item,
-#v4-income-chart .v4-legend-item{margin:8px 0!important;font-size:13px!important}
-#categories .v4-legend-item small,
-#v4-income-chart .v4-legend-item small{font-size:11px!important}
+/* V19: DONUT della V17 ripristinati integralmente.
+   Nessuna regola CSS qui altera piu' diametro, font o legende. */
 
 /* transaction list */
 #transactions{display:flex;flex-direction:column;gap:10px}
@@ -131,7 +117,6 @@ main{padding-bottom:18px}
   .tx-icon{width:52px;height:52px;border-radius:16px!important;font-size:25px}
   .tx-info b{font-size:1rem!important}
   .tx-amount{font-size:1rem!important}
-  #categories .v4-donut,#v4-income-chart .v4-donut{width:min(170px,54vw)!important;height:min(170px,54vw)!important}
 }
 
 @media(min-width:720px){

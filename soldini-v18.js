@@ -58,7 +58,8 @@ function compactActionButtons(){
   const candidates = [
     ['#s12-report-open', '📸 Resoconto'],
     ['#v4-rec-button', '🔁 Ricorrenti'],
-    ['#soldini-categories-btn', '🏷️ Categorie']
+    ['#soldini-categories-btn', '🏷️ Categorie'],
+    ['#v5-vat-btn', '🧾 IVA']
   ];
 
   candidates.forEach(([selector, label]) => {
@@ -127,6 +128,58 @@ function escapeHtml(x){
   return String(x ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
+/* V19: ripristino stabile delle ciambelle della V17.
+   La logica di app.js ridisegna #categories con barre su ogni refresh.
+   Il disegno originale V4/V17 viene ripristinato anche dopo quel refresh. */
+const sd19Colors=['#f78ea9','#ffca78','#78c9a9','#95b9f4','#bda2ef','#efaa83','#7dd7d5','#d7bf9f','#d797c9','#a4c885'];
+const sd19Money=n=>new Intl.NumberFormat('it-IT',{style:'currency',currency:'EUR'}).format(n);
+let sd19ChartQueued=false;
+function sd19ReadTransactions(){
+  const data={income:new Map(),expense:new Map()};
+  $$('#transactions .tx-row').forEach(row=>{
+    const amountEl=row.querySelector('.tx-amount');
+    const kind=amountEl?.classList.contains('pos')?'income':'expense';
+    const name=row.querySelector('.tx-info b')?.textContent?.trim()||'Altro';
+    const amount=Number((amountEl?.textContent||'').replace(/[^0-9,.-]/g,'').replace(/\./g,'').replace(',','.').replace(/^-/,'') );
+    if(Number.isFinite(amount)&&amount>0)data[kind].set(name,(data[kind].get(name)||0)+amount);
+  });
+  return data;
+}
+function sd19PieMarkup(counts,kind){
+  const entries=[...counts.entries()].sort((a,b)=>b[1]-a[1]);
+  const total=entries.reduce((a,x)=>a+x[1],0);
+  if(!total)return '<div class="v4-empty">Nessun '+(kind==='income'?'incasso':'pagamento')+' nel periodo selezionato 🌷</div>';
+  let angle=0;
+  const gradient=entries.map(([,value],i)=>{const start=angle;angle+=value/total*100;return `${sd19Colors[i%sd19Colors.length]} ${start}% ${angle}%`;}).join(',');
+  return `<div class="v4-pie-wrap"><div class="v4-donut" style="background:conic-gradient(${gradient})"><span><strong>${escapeHtml(sd19Money(total))}</strong><small>${kind==='income'?'entrate':'spese'} totali</small></span></div><div class="v4-pie-legend">${entries.map(([label,value],i)=>`<div class="v4-legend-item"><i style="background:${sd19Colors[i%sd19Colors.length]}"></i><span>${escapeHtml(label)}</span><b>${(value/total*100).toFixed(1).replace('.',',')}% <small>${escapeHtml(sd19Money(value))}</small></b></div>`).join('')}</div></div>`;
+}
+function sd19RestoreDonuts(){
+  const expense=$('#categories');
+  const income=$('#v4-income-chart');
+  if(!expense||!income)return;
+  // Do not touch a correct V17 donut (or its empty state).
+  const needsExpense=!expense.querySelector('.v4-pie-wrap, .v4-empty');
+  const needsIncome=!income.querySelector('.v4-pie-wrap, .v4-empty');
+  if(!needsExpense&&!needsIncome)return;
+  const tx=sd19ReadTransactions();
+  if(needsExpense)expense.innerHTML=sd19PieMarkup(tx.expense,'expense');
+  if(needsIncome)income.innerHTML=sd19PieMarkup(tx.income,'income');
+}
+function sd19QueueDonuts(){
+  if(sd19ChartQueued)return;
+  sd19ChartQueued=true;
+  queueMicrotask(()=>{sd19ChartQueued=false;sd19RestoreDonuts();});
+}
+function sd19ObserveDonuts(){
+  for(const selector of ['#transactions','#categories','#v4-income-chart']){
+    const host=$(selector);
+    if(!host||host.dataset.sd19Observed)return;
+    host.dataset.sd19Observed='1';
+    new MutationObserver(sd19QueueDonuts).observe(host,{childList:true});
+  }
+  sd19QueueDonuts();
+}
+
 function observe(){
   const tx = $('#transactions');
   if(tx && !tx.dataset.sd18observe){
@@ -142,6 +195,7 @@ function observe(){
       tagCards();
       ensureBottomNav();
       enhanceQuickHints();
+      sd19ObserveDonuts();
     }).observe(app, {childList:true, subtree:true});
   }
 }
@@ -160,12 +214,14 @@ function boot(){
   ensureBottomNav();
   enhanceQuickHints();
   observe();
+  sd19ObserveDonuts();
 
   // Some modules insert buttons later.
   setInterval(() => {
     compactActionButtons();
     tagCards();
     enhanceQuickHints();
+    sd19ObserveDonuts();
   }, 1200);
 }
 
