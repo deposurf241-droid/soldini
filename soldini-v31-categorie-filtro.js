@@ -1,36 +1,35 @@
-/* Soldini V31: nasconde solo due suggerimenti per Negozio > Entrata.
-   Non tocca Firestore, movimenti salvati, altre categorie o grafici. */
+/* Soldini V32: filtra i suggerimenti, senza toccare i movimenti.
+   Negozio/Entrata: nasconde Incisione e Incassatore.
+   Casa/Spesa: nasconde solo Farmacia e Teatro, NON Spese mediche e farmacia. */
 (() => {
   'use strict';
-  const excluded = new Set(['incisione', 'incassatore']);
+  const excludedShopIncome = new Set(['incisione', 'incassatore']);
+  const excludedHouseExpense = new Set(['farmacia', 'teatro']);
   const norm = value => String(value || '')
-    .normalize('NFKC').trim().toLocaleLowerCase('it-IT')
-    .replace(/\s+/g, ' ');
-
+    .normalize('NFKC').trim().toLocaleLowerCase('it-IT').replace(/\s+/g, ' ');
   const get = id => document.getElementById(id);
-  const correctContext = () => {
+  const excludedInContext = () => {
     const space = get('tx-space');
-    const choice = space && space.selectedOptions && space.selectedOptions[0];
-    const isShop = Boolean(choice && /\bnegozio\b/i.test(choice.textContent || ''));
+    const choice = space?.selectedOptions?.[0];
+    const label = norm(choice?.textContent);
     const income = Boolean(document.querySelector('input[name="kind"][value="income"]:checked'));
-    return isShop && income;
+    if (/\bnegozio\b/.test(label) && income) return excludedShopIncome;
+    if (/\bcasa\b/.test(label) && !income) return excludedHouseExpense;
+    return null;
   };
-
   let scheduled = false;
   const filter = () => {
     scheduled = false;
     const list = get('v7-category-list');
     if (!list) return;
-    const hide = correctContext();
-    // La lista può essere aggiornata da moduli precedenti in qualsiasi momento.
-    // Nascondiamo solo i due elementi esatti, non i fornitori con nomi simili.
+    const excluded = excludedInContext();
     for (const item of list.querySelectorAll('.v7-category-choice, button[role="option"]')) {
       const label = item.querySelector('span:last-child');
       const value = norm(label ? label.textContent : item.textContent);
-      const mustHide = hide && excluded.has(value);
+      const mustHide = Boolean(excluded?.has(value));
       if (item.hidden !== mustHide) item.hidden = mustHide;
       if (mustHide && item.style.display !== 'none') item.style.display = 'none';
-      else if (!mustHide && item.style.display === 'none') item.style.display = '';
+      if (!mustHide && item.style.display === 'none') item.style.display = '';
     }
   };
   const schedule = () => {
@@ -41,12 +40,12 @@
   const install = () => {
     const list = get('v7-category-list');
     if (!list) return;
-    new MutationObserver(schedule).observe(list, { childList: true, subtree: true });
+    new MutationObserver(schedule).observe(list, {childList:true, subtree:true});
     document.addEventListener('change', schedule, true);
     document.addEventListener('click', schedule, true);
     document.addEventListener('input', schedule, true);
     filter();
   };
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', install, { once: true });
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', install, {once:true});
   else install();
 })();
