@@ -1,7 +1,7 @@
 /* Soldini V25: elenco canonico, solo Negozio. Nessun dato Firebase modificato. */
 export const SHOP_INCOME = Object.freeze([
-  'Infilatura','Rodiatura','Pagamento in oro','Incisione','Riparazione',
-  'Incassatore','Creazione','Vetrina','Compra oro','Clips di sicurezza D&D'
+  'Infilatura','Rodiatura','Pagamento in oro','Riparazione',
+  'Creazione','Vetrina','Compra oro','Clips di sicurezza D&D'
 ]);
 export const SHOP_EXPENSE = Object.freeze([
   'Affitto negozio','Bollette telefonia','Bollette luce','Bollette acqua e condominio',

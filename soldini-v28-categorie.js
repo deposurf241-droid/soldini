@@ -11,7 +11,7 @@ const EXPENSE = [
   'Fornitore Laser Claudio', 'Altro'
 ];
 const INCOME = [
-  'Infilatura','Rodiatura','Pagamento in oro','Incisione','Riparazione','Incassatore',
+  'Infilatura','Rodiatura','Pagamento in oro','Riparazione',
   'Creazione','Vetrina','Compra oro','Clips di sicurezza D&D'
 ];
 const HOUSE_EXPENSE = [
@@ -51,6 +51,9 @@ function setEmoji(){if(emoji)emoji.textContent=iconFor(field?.value)}
 function add(type,value){
   if(type!=='expense'&&type!=='income')return;
   const original=clean(value);
+  // Non mostrare piu Incisione e Incassatore tra le entrate del Negozio,
+  // nemmeno quando esistono movimenti storici con queste categorie.
+  if(isShop() && type==='income' && ['incisione','incassatore'].includes(norm(original)))return;
   const name=norm(original)==='fornitore lefèvre'||norm(original)==='fornitore lefevre'?'Fornitore Lefèvre e Emme':original;
   const key=norm(name);
   if(name&&!entries[type].has(key))entries[type].set(key,name);
