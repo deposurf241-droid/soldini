@@ -30,6 +30,8 @@ const isShop=()=>{
 };
 function iconFor(name){
   const s=norm(name).normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  if(/^fornitore\b/.test(s))return '🛍️';
+  if(s==='incassatore'&&kind()==='income')return '';
   const tests=[[/bollett|luce|acqua|condominio|telefonia/,'💡'],[/tasse|iva|inps|inail|irpef/,'🧾'],
     [/fornitore|fusione|pietre/,'📦'],[/affitt/,'🏠'],[/oro|gioiell|orecchin|braccial/,'💎'],
     [/riparazion|incision|rodiat|infilat/,'🛠️'],[/stipend|lavor/,'💼'],
