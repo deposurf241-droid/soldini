@@ -1,3 +1,4 @@
+import {shopPreset,isShopById} from './soldini-shop-categories.js?v=25';
 /* Soldini V7 - categorie definite solo dall'utente, recuperate dai movimenti Firebase */
 import { getApps } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js';
 import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js';
@@ -69,25 +70,34 @@ function renderChoices(){
   if(!matches.length&&!loading){const empty=document.createElement('div');empty.className='v7-list-status';empty.textContent=typed?'Non è ancora una tua categoria. Puoi crearla salvando il movimento.':'Nessuna categoria salvata: scrivi la prima e salva il movimento.';panel.append(empty)}
   if(typed&&!exact){const newChoice=document.createElement('div');newChoice.className='v7-create-status';newChoice.textContent=`✨ Nuova categoria: “${cap(field.value)}”`;panel.append(newChoice)}
 }
-function userSpaces(){return [...new Set(['personal',...Array.from(visibleSpace.options).map(opt=>opt.value).filter(v=>v&&v!=='global'&&v!=='personal')])];}
+// Ogni spazio ha il proprio elenco. Niente categorie Negozio in Casa/Personale.
 async function loadCategories(){
   if(!uid||!db)return;
   const request=++fetchVersion;
-  loading=true;renderChoices();
-  const destinations=userSpaces();
-  const requests=destinations.map(scope=>getDocs(scope==='personal'?collection(db,'users',uid,'transactions'):collection(db,'spaces',scope,'transactions')));
-  const results=await Promise.allSettled(requests);
-  if(request!==fetchVersion)return;
+  const chosen=spaceField?.value||'personal';
+  const shop=isShopById(chosen);
   categories={income:new Map(),expense:new Map()};
-  results.forEach(result=>{
-    if(result.status==='fulfilled')result.value.forEach(document=>{
-      const data=document.data();
-      if(data.kind==='income'||data.kind==='expense')addCategory(data.kind,data.category);
-    });
-  });
-  loading=false;renderChoices();
-  const unavailable=results.some(result=>result.status==='rejected');
-  hint.textContent=unavailable?'Alcune categorie non sono disponibili: controlla la connessione.':'Scegli una categoria salvata oppure scrivine una nuova: sarà memorizzata nel movimento.';
+  if(shop){for(const name of shopPreset('income'))addCategory('income',name);
+           for(const name of shopPreset('expense'))addCategory('expense',name)}
+  loading=true;renderChoices();
+  try{
+    const ref=chosen==='personal'?
+      collection(db,'users',uid,'transactions'):
+      chosen==='global'?null:collection(db,'spaces',chosen,'transactions');
+    if(ref){
+      const docs=await getDocs(ref);
+      if(request!==fetchVersion)return;
+      docs.forEach(doc=>{
+        const d=doc.data();
+        if(['income','expense'].includes(d.kind))addCategory(d.kind,d.category);
+      });
+    }
+    if(request===fetchVersion){loading=false;renderChoices();hint.textContent=shop?
+      'Categorie del Negozio preimpostate. Puoi sempre scrivere una nuova categoria.':
+      'Categorie usate in questo spazio. Puoi scriverne una nuova e salvarla.';}
+  }catch(err){
+    if(request===fetchVersion){loading=false;renderChoices();hint.textContent='Categorie preimpostate disponibili; impossibile aggiornare quelle già salvate.';}
+  }
 }
 
 // Wait for the existing Soldini application to initialize Firebase.
@@ -108,7 +118,7 @@ field.addEventListener('input',()=>{setEmoji();setOpen(true)});
 field.addEventListener('keydown',event=>{if(event.key==='Escape')setOpen(false);if(event.key==='ArrowDown'&&opened){event.preventDefault();panel.querySelector('button')?.focus()}});
 toggle.addEventListener('click',()=>{setOpen(!opened);if(opened){field.focus();loadCategories()}});
 kindInputs.forEach(r=>r.addEventListener('change',()=>{field.value='';setEmoji();if(opened)renderChoices()}));
-spaceField.addEventListener('change',()=>{if(opened)loadCategories()});
+spaceField.addEventListener('change',()=>{field.value='';setEmoji();loadCategories()});
 visibleSpace.addEventListener('change',()=>{if(opened)loadCategories()});
 form.addEventListener('submit',()=>{
   // Do not add a category on invalid submissions.
