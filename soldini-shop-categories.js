@@ -10,6 +10,11 @@ export const SHOP_EXPENSE = Object.freeze([
   'Fornitore Fusione','Fornitore Lefèvre','Fornitore Incassatore Luciano',
   'Fornitore CP Pietre','Fornitore Laser Claudio','Altro'
 ]);
+export const HOUSE_INCOME = Object.freeze(['Stipendio Cinzia']);
+export const HOUSE_EXPENSE = Object.freeze([
+  'Affitto casa','Bollette casa luce','Bollette casa gas','Bollette casa telefono',
+  'Supermercato','Benzina','Assicurazioni','Spese mediche e farmacia','Altro casa'
+]);
 export const MACRO_EXPENSE = Object.freeze([
   'Affitto negozio','Oro vecchio','Fornitori','Tasse','Bollette','Commercialista','Altro'
 ]);
@@ -32,3 +37,24 @@ export function isShopById(id, select=document.getElementById('space-select')){
 }
 export function isShopLabel(label){return /negozio/i.test(String(label||''))}
 export function shopPreset(kind){return kind==='income'?SHOP_INCOME:SHOP_EXPENSE}
+
+// Classificazioni separate: in “Tutto insieme” le bollette di Casa e Negozio non si mischiano.
+export function isHouseLabel(label){return /\bcasa\b/i.test(String(label||''))}
+export function isHouseById(id,select=document.getElementById('space-select')){
+  if(!id||id==='personal'||id==='global')return false;
+  return [select,document.getElementById('tx-space')].some(el=>[...(el?.options||[])].some(opt=>opt.value===id && isHouseLabel(opt.textContent)));
+}
+export function houseExpenseMacro(name){
+  const s=normalizeShopCategory(name);
+  if(/^(bollett|utenze|luce |gas |telefono )/.test(s))return 'Bollette casa';
+  if(s==='altro'||s==='altro casa')return 'Altro casa';
+  return name||'Senza categoria';
+}
+export function expenseMacroBySpace(name,label,{combined=false}={}){
+  if(isShopLabel(label)){
+    const macro=expenseMacro(name);
+    return combined && macro==='Bollette'?'Bollette negozio':macro;
+  }
+  if(isHouseLabel(label)) return houseExpenseMacro(name);
+  return name||'Senza categoria';
+}

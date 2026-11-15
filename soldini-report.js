@@ -1,4 +1,4 @@
-import {expenseMacro,isShopLabel,normalizeShopCategory} from './soldini-shop-categories.js?v=25';
+import {expenseMacro,expenseMacroBySpace,isShopLabel,isHouseLabel,normalizeShopCategory} from './soldini-shop-categories.js?v=28';
 /* Soldini V13 — Resoconto mensile esportabile in PNG. Non modifica Firestore. */
 import {getApps} from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js';
 import {getAuth,onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js';
@@ -18,7 +18,7 @@ function groups(items,kind,limit=5){
   const map=new Map();
   for(const t of items.filter(x=>x.kind===kind)){
     const raw=String(t.category||'Senza categoria').trim()||'Senza categoria';
-    const name=kind==='expense'&&t._shop?expenseMacro(raw):raw;
+    const name=kind==='expense'?expenseMacroBySpace(raw,t._spaceName|| (t._shop?'Negozio':''),{combined:items.some(z=>z._combined)}):raw;
     map.set(name,(map.get(name)||0)+Number(t.amount));
   }
   let arr=[...map].map(([name,value])=>({name,value})).sort((a,b)=>b.value-a.value||a.name.localeCompare(b.name,'it'));
@@ -33,6 +33,14 @@ function shopDetails(items,macro){
     vals.set(label,(vals.get(label)||0)+Number(t.amount));
   }
   return [...vals].map(([name,value])=>({name,value})).sort((a,b)=>b.value-a.value);
+}
+function houseDetails(items){
+ const vals=new Map();
+ for(const t of items.filter(t=>t.kind==='expense'&&t._house&&expenseMacroBySpace(t.category,t._spaceName)==='Bollette casa')){
+   const category=String(t.category||'Bollette casa').trim();
+   vals.set(category,(vals.get(category)||0)+Number(t.amount));
+ }
+ return [...vals].map(([name,value])=>({name,value})).sort((a,b)=>b.value-a.value);
 }
 function v25Detail(g,x,y,w,h,title,items,tint){
   if(!items.length)return;
@@ -71,28 +79,32 @@ function v13Donut(g,cx,cy,r,values,total){
   }
   g.restore();
 }
-function v13DonutCard(g,x,y,w,h,title,items,kind,shop=false){
+function v13DonutCard(g,x,y,w,h,title,items,kind,shop=false,house=false,combined=false){
   v13Rounded(g,x,y,w,h,40,'#ffffff');
   v13Fit(g,title,x+28,y+50,w-48,29,'#48314a',850);
-  const arr=groups(items,kind,shop?Infinity:5),total=arr.reduce((a,b)=>a+b.value,0);
+  const arr=groups(items,kind,(shop||house||combined)?Infinity:5),total=arr.reduce((a,b)=>a+b.value,0);
   const cx=x+w/2,cy=y+223;
   v13Donut(g,cx,cy,129,arr,total);
   v13Text(g,v13Money(total),cx,cy-7,total>=100000?28:34,'#46304a',850,'center');
   v13Text(g,kind==='income'?'entrate totali':'uscite totali',cx,cy+36,19,'#a88b9f',550,'center');
   if(!arr.length){v13Text(g,'Nessun movimento nel periodo',cx,y+447,22,'#b293a5',550,'center');return}
-  const step=shop?57:66;
+  const step=combined?49:shop?57:house?57:66;
   arr.forEach((item,i)=>{
     const yy=y+410+i*step;
     v13Rounded(g,x+31,yy-10,22,22,11,v13Colors[i%v13Colors.length]);
-    v13Fit(g,item.name,x+67,yy+2,w-246,shop?20:21,'#57405b',600);
+    v13Fit(g,item.name,x+67,yy+2,w-246,(shop||house||combined)?20:21,'#57405b',600);
     v13Text(g,(100*item.value/total).toFixed(1).replace('.',',')+'%',x+w-30,yy-5,23,'#4d3551',800,'right');
     v13Text(g,v13Money(item.value),x+w-30,yy+23,17,'#a98ca1',500,'right');
   });
-  if(shop&&kind==='expense'){
+  if((shop||combined)&&kind==='expense'){
     const bx=x+20,bw=w-40;
-    v25Detail(g,bx,y+832,bw,137,'⚡ Dettaglio bollette',shopDetails(items,'Bollette'),'#fff1f6');
+    v25Detail(g,bx,y+832,bw,137,combined?'⚡ Dettaglio bollette negozio':'⚡ Dettaglio bollette',shopDetails(items,'Bollette'),'#fff1f6');
     v25Detail(g,bx,y+982,bw,190,'🧾 Dettaglio tasse',shopDetails(items,'Tasse'),'#fff2f7');
     v25Detail(g,bx,y+1185,bw,196,'📦 Dettaglio fornitori',shopDetails(items,'Fornitori'),'#fff5f1');
+  }
+  if((house||combined)&&kind==='expense'){
+    const bx=x+20,bw=w-40;
+    v25Detail(g,bx,y+(combined?1480:830),bw,164,'💡 Dettaglio bollette casa',houseDetails(items),'#f1f8ff');
   }
 }
 function v13Trend(g,x,y,w,h,items,start,end){
@@ -120,7 +132,7 @@ function v13Trend(g,x,y,w,h,items,start,end){
 function paint(items,start,end,scopeName){
   const totalIn=items.filter(z=>z.kind==='income').reduce((a,b)=>a+b.amount,0),totalOut=items.filter(z=>z.kind==='expense').reduce((a,b)=>a+b.amount,0),balance=totalIn-totalOut;
   // Poster verticale fisso: grafici a torta AFFIANCATI, come nell'esempio scelto.
-  const shop=isShopLabel(scopeName);const H=shop?2800:2100;const c=document.createElement('canvas');c.width=1200;c.height=H;const g=c.getContext('2d');
+  const shop=isShopLabel(scopeName);const house=isHouseLabel(scopeName);const combined=/tutto insieme|globale/i.test(scopeName);const detailed=shop||house||combined;const H=combined?3250:shop?2800:house?2450:2140;const c=document.createElement('canvas');c.width=1200;c.height=H;const g=c.getContext('2d');
   let grad=g.createLinearGradient(0,0,1200,H);grad.addColorStop(0,'#fffaf5');grad.addColorStop(1,'#fff3ed');g.fillStyle=grad;g.fillRect(0,0,1200,H);
   v13Ellipse(g,20,40,290,105,'#fde4e9');v13Ellipse(g,1180,40,285,115,'#ffebeb');v13Ellipse(g,52,H-30,240,125,'#e6f6ce');v13Ellipse(g,1152,H-23,250,135,'#e2f3c9');
   v13Rounded(g,377,62,118,112,29,'#ffecaf');v13Text(g,'🌈',436,123,68,'#44354a',600,'center');
@@ -132,15 +144,16 @@ function paint(items,start,end,scopeName){
   v13Text(g,scopeName,600,379,22,'#ad8fa4',600,'center');
   const cards=[{x:31,title:'💸 Uscite totali',val:totalOut,fill:'#ffe0e9',ink:'#ac3562'},{x:431,title:'💚 Entrate totali',val:totalIn,fill:'#daf8e6',ink:'#16845b'},{x:831,title:'✨ Saldo finale',val:balance,fill:'#fff0c2',ink:balance>=0?'#247d52':'#874a6a'}];
   cards.forEach(card=>{v13Rounded(g,card.x,422,338,188,33,card.fill);v13Fit(g,card.title,card.x+23,467,292,28,card.ink,800);v13Text(g,(card.title.includes('Saldo')&&card.val>0?'+':'')+v13Money(card.val),card.x+169,551,39,card.ink,900,'center')});
-  v13DonutCard(g,30,648,556,shop?1430:764,'🍰 Dove spendi',items,'expense',shop);
-  v13DonutCard(g,614,648,556,shop?1430:764,'🤑 Da dove arrivano le entrate',items,'income',shop);
-  v13Trend(g,30,shop?2110:1442,1140,436,items,start,end);
-  v13Rounded(g,300,shop?2594:1914,600,52,26,'#fde5e9');v13Fit(g,'Periodo: '+niceDate(start)+' – '+niceDate(end),600,shop?2620:1940,555,22,'#a16986',700,'center');
-  v13Rounded(g,360,shop?2655:1975,480,65,30,'#ffe6ec');v13Text(g,balance>=0?'Stai andando bene 🌸':'Tieni d’occhio le spese 🌷',600,shop?2689:2009,30,'#c04b80',850,'center');
-  v13Text(g,'Creato con Soldini 🌈',600,shop?2760:2070,19,'#ac8c9c',600,'center');
+  v13DonutCard(g,30,648,556,combined?1850:shop?1430:house?1050:764,'🍰 Dove spendi',items,'expense',shop,house,combined);
+  v13DonutCard(g,614,648,556,combined?1850:shop?1430:house?1050:764,'🤑 Da dove arrivano le entrate',items,'income',shop,house,combined);
+  const chartY=combined?2540:shop?2110:house?1720:1442;
+  v13Trend(g,30,chartY,1140,436,items,start,end);
+  v13Rounded(g,300,chartY+484,600,52,26,'#fde5e9');v13Fit(g,'Periodo: '+niceDate(start)+' – '+niceDate(end),600,chartY+510,555,22,'#a16986',700,'center');
+  v13Rounded(g,360,chartY+545,480,65,30,'#ffe6ec');v13Text(g,balance>=0?'Stai andando bene 🌸':'Tieni d’occhio le spese 🌷',600,chartY+579,30,'#c04b80',850,'center');
+  v13Text(g,'Creato con Soldini 🌈',600,chartY+650,19,'#ac8c9c',600,'center');
   return c.toDataURL('image/png');
 }
-async function collect(scope,user,db){let rows=[];if(scope==='personal'){const snap=await getDocs(collection(db,'users',user.uid,'transactions'));snap.forEach(d=>rows.push({...d.data(),id:d.id}));return rows}const shared=await getDocs(query(collection(db,'spaces'),where('memberIds','array-contains',user.uid)));for(const s of shared.docs){if(scope!=='global'&&s.id!==scope)continue;const snap=await getDocs(collection(db,'spaces',s.id,'transactions'));snap.forEach(d=>rows.push({...d.data(),id:d.id,_shop:isShopLabel(s.data().name)}))}return rows}
-function show(){if($('.s12-backdrop'))return;const now=new Date(),m=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;const cover=document.createElement('div');cover.className='s12-backdrop';cover.innerHTML=`<div class="s12-sheet" role="dialog" aria-modal="true" aria-label="Resoconto mensile"><div class="s12-head"><h2>📸 Resoconto in immagine</h2><button class="s12-close" type="button" aria-label="Chiudi">×</button></div><p class="s12-help">Scegli il mese o le date e genera una foto con grafici, categorie, entrate, uscite e saldo. Nessun dato viene modificato.</p><label>Spazio da analizzare<select id="s12-scope"></select></label><label>Periodo<select id="s12-mode"><option value="month">Un mese</option><option value="custom">Da una data a un'altra</option></select></label><div id="s12-month-wrap"><label>Mese<input type="month" id="s12-month" value="${m}"></label></div><div id="s12-dates" style="display:none"><div class="s12-dual"><div><label>Dal<input type="date" id="s12-start"></label></div><div><label>Al<input type="date" id="s12-end"></label></div></div></div><div class="s12-actions"><button class="s12-build" type="button">✨ Genera immagine</button><button class="s12-download" type="button" disabled>⬇ Salva foto</button></div><p class="s12-state" role="status"></p><img class="s12-preview" alt="Anteprima resoconto Soldini" hidden><p class="s12-note">Su iPhone puoi usare «Salva foto» oppure tenere premuto sull'anteprima e scegliere «Salva in Foto». Il grafico riporta i totali cumulativi, non una previsione.</p></div>`;document.body.append(cover);const scope=cover.querySelector('#s12-scope'),mainScope=$('#space-select');if(mainScope)scope.innerHTML=mainScope.innerHTML;else scope.innerHTML='<option value="personal">Personale</option>';scope.value=mainScope?.value||'personal';cover.querySelector('.s12-close').onclick=()=>cover.remove();cover.addEventListener('click',e=>{if(e.target===cover)cover.remove()});const mode=cover.querySelector('#s12-mode');mode.onchange=()=>{cover.querySelector('#s12-month-wrap').style.display=mode.value==='month'?'block':'none';cover.querySelector('#s12-dates').style.display=mode.value==='custom'?'block':'none'};const start=cover.querySelector('#s12-start'),end=cover.querySelector('#s12-end');start.value=fdate(new Date(now.getFullYear(),now.getMonth(),1));end.value=fdate(now);const state=cover.querySelector('.s12-state'),preview=cover.querySelector('.s12-preview'),save=cover.querySelector('.s12-download');cover.querySelector('.s12-build').onclick=async()=>{if(!currentUser||!currentDb){state.textContent='Devi accedere a Soldini prima di generare il resoconto.';return}let a,b;if(mode.value==='month'){a=cover.querySelector('#s12-month').value+'-01';const d=parseDate(a);b=fdate(new Date(d.getFullYear(),d.getMonth()+1,0))}else{a=start.value;b=end.value}if(!a||!b||a>b||(parseDate(b)-parseDate(a))/86400000>730){state.textContent='Seleziona date valide (massimo 2 anni).';return}state.textContent='Sto leggendo i movimenti autorizzati…';save.disabled=true;try{const all=await collect(scope.value,currentUser,currentDb);const items=all.filter(t=>['income','expense'].includes(t.kind)&&Number.isFinite(Number(t.amount))&&Number(t.amount)>0&&typeof t.date==='string'&&t.date>=a&&t.date<=b).map(t=>({...t,amount:Number(t.amount)}));const name=scope.selectedOptions[0]?.textContent?.replace(/^[^\p{L}\p{N}]+/u,'').trim()||'Soldini';lastPng=paint(items,a,b,name);lastName=`Soldini_resoconto_${a}_${b}.png`;preview.src=lastPng;preview.hidden=false;save.disabled=false;state.textContent=`Immagine pronta! ${items.length} movimenti inclusi. Tocca «Salva foto».`}catch(err){console.error('Soldini V12 report:',err);state.textContent='Impossibile leggere i movimenti. Verifica connessione e accessi Firebase.'}};save.onclick=async()=>{if(!lastPng)return;try{const res=await fetch(lastPng),blob=await res.blob(),file=new File([blob],lastName,{type:'image/png'});if(navigator.canShare?.({files:[file]})&&navigator.share){await navigator.share({files:[file],title:'Resoconto Soldini'});return}}catch(e){if(e.name==='AbortError')return}const a=document.createElement('a');a.href=lastPng;a.download=lastName;document.body.append(a);a.click();a.remove();state.textContent='Se il download non parte, tieni premuta l’anteprima e scegli «Salva in Foto».'}}
+async function collect(scope,user,db){let rows=[];if(scope==='personal'){const snap=await getDocs(collection(db,'users',user.uid,'transactions'));snap.forEach(d=>rows.push({...d.data(),id:d.id}));return rows}const shared=await getDocs(query(collection(db,'spaces'),where('memberIds','array-contains',user.uid)));for(const s of shared.docs){if(scope!=='global'&&s.id!==scope)continue;const snap=await getDocs(collection(db,'spaces',s.id,'transactions'));snap.forEach(d=>rows.push({...d.data(),id:d.id,_spaceName:s.data().name,_shop:isShopLabel(s.data().name),_house:isHouseLabel(s.data().name)}))}return rows}
+function show(){if($('.s12-backdrop'))return;const now=new Date(),m=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;const cover=document.createElement('div');cover.className='s12-backdrop';cover.innerHTML=`<div class="s12-sheet" role="dialog" aria-modal="true" aria-label="Resoconto mensile"><div class="s12-head"><h2>📸 Resoconto in immagine</h2><button class="s12-close" type="button" aria-label="Chiudi">×</button></div><p class="s12-help">Scegli il mese o le date e genera una foto con grafici, categorie, entrate, uscite e saldo. Nessun dato viene modificato.</p><label>Spazio da analizzare<select id="s12-scope"></select></label><label>Periodo<select id="s12-mode"><option value="month">Un mese</option><option value="custom">Da una data a un'altra</option></select></label><div id="s12-month-wrap"><label>Mese<input type="month" id="s12-month" value="${m}"></label></div><div id="s12-dates" style="display:none"><div class="s12-dual"><div><label>Dal<input type="date" id="s12-start"></label></div><div><label>Al<input type="date" id="s12-end"></label></div></div></div><div class="s12-actions"><button class="s12-build" type="button">✨ Genera immagine</button><button class="s12-download" type="button" disabled>⬇ Salva foto</button></div><p class="s12-state" role="status"></p><img class="s12-preview" alt="Anteprima resoconto Soldini" hidden><p class="s12-note">Su iPhone puoi usare «Salva foto» oppure tenere premuto sull'anteprima e scegliere «Salva in Foto». Il grafico riporta i totali cumulativi, non una previsione.</p></div>`;document.body.append(cover);const scope=cover.querySelector('#s12-scope'),mainScope=$('#space-select');if(mainScope)scope.innerHTML=mainScope.innerHTML;else scope.innerHTML='<option value="personal">Personale</option>';scope.value=mainScope?.value||'personal';cover.querySelector('.s12-close').onclick=()=>cover.remove();cover.addEventListener('click',e=>{if(e.target===cover)cover.remove()});const mode=cover.querySelector('#s12-mode');mode.onchange=()=>{cover.querySelector('#s12-month-wrap').style.display=mode.value==='month'?'block':'none';cover.querySelector('#s12-dates').style.display=mode.value==='custom'?'block':'none'};const start=cover.querySelector('#s12-start'),end=cover.querySelector('#s12-end');start.value=fdate(new Date(now.getFullYear(),now.getMonth(),1));end.value=fdate(now);const state=cover.querySelector('.s12-state'),preview=cover.querySelector('.s12-preview'),save=cover.querySelector('.s12-download');cover.querySelector('.s12-build').onclick=async()=>{if(!currentUser||!currentDb){state.textContent='Devi accedere a Soldini prima di generare il resoconto.';return}let a,b;if(mode.value==='month'){a=cover.querySelector('#s12-month').value+'-01';const d=parseDate(a);b=fdate(new Date(d.getFullYear(),d.getMonth()+1,0))}else{a=start.value;b=end.value}if(!a||!b||a>b||(parseDate(b)-parseDate(a))/86400000>730){state.textContent='Seleziona date valide (massimo 2 anni).';return}state.textContent='Sto leggendo i movimenti autorizzati…';save.disabled=true;try{const all=await collect(scope.value,currentUser,currentDb);const items=all.filter(t=>['income','expense'].includes(t.kind)&&Number.isFinite(Number(t.amount))&&Number(t.amount)>0&&typeof t.date==='string'&&t.date>=a&&t.date<=b).map(t=>({...t,amount:Number(t.amount),_combined:scope.value==='global'}));const name=scope.selectedOptions[0]?.textContent?.replace(/^[^\p{L}\p{N}]+/u,'').trim()||'Soldini';lastPng=paint(items,a,b,name);lastName=`Soldini_resoconto_${a}_${b}.png`;preview.src=lastPng;preview.hidden=false;save.disabled=false;state.textContent=`Immagine pronta! ${items.length} movimenti inclusi. Tocca «Salva foto».`}catch(err){console.error('Soldini V12 report:',err);state.textContent='Impossibile leggere i movimenti. Verifica connessione e accessi Firebase.'}};save.onclick=async()=>{if(!lastPng)return;try{const res=await fetch(lastPng),blob=await res.blob(),file=new File([blob],lastName,{type:'image/png'});if(navigator.canShare?.({files:[file]})&&navigator.share){await navigator.share({files:[file],title:'Resoconto Soldini'});return}}catch(e){if(e.name==='AbortError')return}const a=document.createElement('a');a.href=lastPng;a.download=lastName;document.body.append(a);a.click();a.remove();state.textContent='Se il download non parte, tieni premuta l’anteprima e scegli «Salva in Foto».'}}
 function boot(){if(!$('#app'))return;if(!$('#s12-report-open')){const b=document.createElement('button');b.type='button';b.id='s12-report-open';b.textContent='📸 Resoconto mensile';const add=$('#soldini-quick-add');if(add)add.insertAdjacentElement('afterend',b);else $('#app .hello')?.insertAdjacentElement('afterend',b);b.onclick=show}const apps=getApps();if(!apps.length){setTimeout(boot,350);return}currentDb=getFirestore(apps[0]);onAuthStateChanged(getAuth(apps[0]),u=>{currentUser=u})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();

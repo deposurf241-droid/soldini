@@ -1,4 +1,4 @@
-import {expenseMacro,isShopById} from './soldini-shop-categories.js?v=25';
+import {expenseMacroBySpace,isShopById,isHouseById} from './soldini-shop-categories.js?v=28';
 // Soldini V4: visualizzazioni per categorie e ricorrenze locali, senza alterare i dati esistenti.
 import {getApps} from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js';
 import {getAuth,onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js';
@@ -13,7 +13,11 @@ const palettes=['#f78ea9','#ffca78','#78c9a9','#95b9f4','#bda2ef','#efaa83','#7d
 function barHost(){return $('#categories')}
 function pieMarkup(counts,kind){const entries=Object.entries(counts).sort((a,b)=>b[1]-a[1]);const total=entries.reduce((s,x)=>s+x[1],0);if(!total)return '<div class="v4-empty">Nessun '+(kind==='income'?'incasso':'pagamento')+' nel periodo selezionato 🌷</div>';
 let angle=0;const gradient=entries.map(([,value],i)=>{let start=angle;angle+=value/total*100;return `${palettes[i%palettes.length]} ${start}% ${angle}%`}).join(',');return `<div class="v4-pie-wrap"><div class="v4-donut" style="background:conic-gradient(${gradient})"><span><strong>${e(euro(total))}</strong><small>${kind==='income'?'entrate':'spese'} totali</small></span></div><div class="v4-pie-legend">${entries.map(([label,value],i)=>`<div class="v4-legend-item"><i style="background:${palettes[i%palettes.length]}"></i><span>${e(label)}</span><b>${(value/total*100).toFixed(1).replace('.',',')}% <small>${e(euro(value))}</small></b></div>`).join('')}</div></div>`}
-function readRendered(){const out={income:Object.create(null),expense:Object.create(null)};$$('#transactions .tx-row').forEach(el=>{const pos=el.querySelector('.tx-amount');const kind=pos?.classList.contains('pos')?'income':'expense';const rawLabel=el.querySelector('.tx-info b')?.textContent?.trim()||'Altro';const label=kind==='expense'&&isShopById(el.dataset.scope)?expenseMacro(rawLabel):rawLabel;const amount=Number((pos?.textContent||'').replace(/[^0-9,.-]/g,'').replace(/\./g,'').replace(',','.').replace(/^-/,'') );if(Number.isFinite(amount)&&amount>0){out[kind][label]=(out[kind][label]||0)+amount}});return out}
+function readRendered(){const out={income:Object.create(null),expense:Object.create(null)};$$('#transactions .tx-row').forEach(el=>{const pos=el.querySelector('.tx-amount');const kind=pos?.classList.contains('pos')?'income':'expense';const rawLabel=el.querySelector('.tx-info b')?.textContent?.trim()||'Altro';const scopeId=el.dataset.scope;
+const scopeOpt=[...(document.querySelector('#space-select')?.options||[]),...(document.querySelector('#tx-space')?.options||[])].find(o=>o.value===scopeId);
+const scopeName=scopeOpt?.textContent||(isShopById(scopeId)?'Negozio':isHouseById(scopeId)?'Casa':'');
+const combined=document.querySelector('#space-select')?.value==='global';
+const label=kind==='expense'?expenseMacroBySpace(rawLabel,scopeName,{combined}):rawLabel;const amount=Number((pos?.textContent||'').replace(/[^0-9,.-]/g,'').replace(/\./g,'').replace(',','.').replace(/^-/,'') );if(Number.isFinite(amount)&&amount>0){out[kind][label]=(out[kind][label]||0)+amount}});return out}
 function installCharts(){const host=barHost();if(!host)return;
 const oldPie=$('#expense-pie')?.closest('.card');if(oldPie)oldPie.style.display='none';
 const card=host.closest('.card');if(card){const h=card.querySelector('h2');if(h)h.textContent='🍰 Dove spendi';}

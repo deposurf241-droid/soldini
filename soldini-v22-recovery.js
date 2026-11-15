@@ -1,4 +1,4 @@
-import {expenseMacro,isShopLabel} from './soldini-shop-categories.js?v=25';
+import {expenseMacroBySpace} from './soldini-shop-categories.js?v=28';
 /* Soldini V22 — Recupero visualizzazione movimenti V17.
    Non sostituisce l'app principale, non modifica regole, dati o Firebase config.
    Ripara soltanto l'elenco quando il rendering originale rimane vuoto.
@@ -64,7 +64,7 @@ function v22DonutHtml(rows,kind){
     const amount=Number(t.amount);
     if(!Number.isFinite(amount)||amount<=0)continue;
     const rawName=String(t.category||'Senza categoria').trim()||'Senza categoria';
-    const name=kind==='expense'&&isShopLabel(v22SpaceNames.get(t.scope))?expenseMacro(rawName):rawName;
+    const name=kind==='expense'?expenseMacroBySpace(rawName,v22SpaceNames.get(t.scope),{combined:v22Scope()==='global'}):rawName;
     totals.set(name,(totals.get(name)||0)+amount);
   }
   const ordered=[...totals.entries()].sort((a,b)=>b[1]-a[1]);
