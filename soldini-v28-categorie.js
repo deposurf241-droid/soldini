@@ -7,7 +7,7 @@ const EXPENSE = [
   'Affitto negozio', 'Bollette telefonia', 'Bollette luce', 'Bollette acqua e condominio',
   'Commercialista', 'Oro vecchio', 'Tasse IVA (accantonamento)', 'Tasse INAIL',
   'Tasse IRPEF', 'Tasse INPS', 'Tasse arretrate', 'Fornitore Fusione',
-  'Fornitore Lefèvre', 'Fornitore Incassatore Luciano', 'Fornitore CP Pietre',
+  'Fornitore Lefèvre e Emme', 'Fornitore Indiano', 'Fornitore Incassatore Luciano', 'Fornitore CP Pietre',
   'Fornitore Laser Claudio', 'Altro'
 ];
 const INCOME = [
@@ -50,7 +50,9 @@ function iconFor(name){
 function setEmoji(){if(emoji)emoji.textContent=iconFor(field?.value)}
 function add(type,value){
   if(type!=='expense'&&type!=='income')return;
-  const name=clean(value),key=norm(name);
+  const original=clean(value);
+  const name=norm(original)==='fornitore lefèvre'||norm(original)==='fornitore lefevre'?'Fornitore Lefèvre e Emme':original;
+  const key=norm(name);
   if(name&&!entries[type].has(key))entries[type].set(key,name);
 }
 function sorted(){return [...entries[kind()].values()].sort((a,b)=>a.localeCompare(b,'it',{sensitivity:'base'}))}

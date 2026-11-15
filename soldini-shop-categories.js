@@ -7,7 +7,7 @@ export const SHOP_EXPENSE = Object.freeze([
   'Affitto negozio','Bollette telefonia','Bollette luce','Bollette acqua e condominio',
   'Commercialista','Oro vecchio','Tasse IVA (accantonamento)','Tasse INAIL',
   'Tasse IRPEF','Tasse INPS','Tasse arretrate',
-  'Fornitore Fusione','Fornitore Lefèvre','Fornitore Incassatore Luciano',
+  'Fornitore Fusione','Fornitore Lefèvre e Emme','Fornitore Indiano','Fornitore Incassatore Luciano',
   'Fornitore CP Pietre','Fornitore Laser Claudio','Altro'
 ]);
 export const HOUSE_INCOME = Object.freeze(['Stipendio Cinzia']);
